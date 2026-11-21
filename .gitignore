@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+.pytest_cache/
+*.pyc
+.env
+
+# Material de terceiros (dossiê da Análise Macro, prints, links com ID de assinante): não publicar
+referencias/
+
+# Versionar explicitamente (garantia contra regras futuras mais amplas)
+!docs/data/cenarios_teoricos.json
+!src/empirico/.gitkeep

@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>O Debate dos Juros · Laboratório</title>
+  <meta name="description" content="Laboratório interativo sobre o debate da Selic: dinâmica da dívida com reação de mercado, princípio de Taylor vs. neofisherianismo e dominância monetária vs. fiscal (TFNP).">
+  <meta property="og:title" content="O Debate dos Juros — Laboratório Teórico">
+  <meta property="og:description" content="A conta da dívida fecha com juros mais baixos. A pergunta é se os juros ficariam baixos depois do anúncio. Teste você mesmo.">
+  <meta property="og:type" content="website">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <link rel="stylesheet" href="css/style.css">
+
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js"></script>
+  <script defer src="js/modelo.js"></script>
+  <script defer src="js/app.js"></script>
+</head>
+<body>
+
+<!-- ============================================================ NAVEGAÇÃO (hub) -->
+<header class="topo">
+  <div class="topo__interno">
+    <a class="marca" href="https://economistacase.github.io/">Observatório <span>Macro</span></a>
+    <nav class="nav" aria-label="Estudos">
+      <a href="https://economistacase.github.io/boletim-macro-python/">Boletim Macro</a>
+      <a href="https://economistacase.github.io/relatorio-ipca/relatorio_ipca.html">Inflação &amp; IPCA</a>
+      <a href="./" aria-current="page">Juros &amp; Dívida</a>
+      <a href="#cadastro" class="nav__cta">Newsletter</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ============================================================ ABERTURA -->
+<section class="hero">
+  <div class="largura">
+    <p class="sobretitulo">Laboratório Teórico · Onda 1</p>
+    <h1>O Debate dos <em>Juros</em></h1>
+    <p class="lide">
+      Em setembro de 2026, André Lara Resende propôs derrubar a Selic de forma anunciada, com o argumento
+      de que os juros são o “único motor” da dívida pública. A conta está certa <strong>dados</strong> os juros.
+      Mas nenhuma identidade contábil diz se os juros <strong>ficariam</strong> baixos depois do anúncio:
+      isso depende de como câmbio, prêmio de risco e expectativas reagem. Este laboratório coloca a reação
+      dos agentes no centro, e deixa você mexer nela.
+    </p>
+    <ol class="roteiro">
+      <li><a href="#divida"><b>1</b><span>A conta da dívida, com e sem reação de mercado</span></a></li>
+      <li><a href="#taylor"><b>2</b><span>O interruptor de Taylor: quando juro alto <em>eleva</em> a inflação</span></a></li>
+      <li><a href="#regimes"><b>3</b><span>Dominância monetária × fiscal: quem se ajusta, o superávit ou o preço?</span></a></li>
+      <li><a href="#mapa"><b>4</b><span>O mapa do debate, ponto a ponto</span></a></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================================================ BLOCO 1 -->
+<section class="bloco" id="divida">
+  <div class="largura">
+    <header class="bloco__cabeca">
+      <p class="bloco__num">Bloco 1</p>
+      <h2>O laboratório da dívida</h2>
+      <p class="bloco__lide">
+        Toda a discussão parte da identidade
+        $$\Delta d_t = \frac{r_t - \theta_t}{1+\theta_t}\,d_{t-1} - pb_t$$
+        No <strong>mundo mecânico</strong>, baixar a Selic derruba o custo e a dívida cai. Ligue a
+        <strong>reação de mercado</strong>: quando a Selic é levada abaixo do juro neutro nominal, abre-se um
+        hiato de credibilidade que encarece a rolagem, deprecia o câmbio e realimenta a inflação.
+      </p>
+    </header>
+
+    <div class="painel">
+      <div class="controles" id="controles-divida">
+        <div class="controle">
+          <label for="sl-selic">Selic média 2027–2036 <output id="out-selic"></output></label>
+          <input type="range" id="sl-selic" min="2" max="20" step="0.25" value="15">
+        </div>
+        <div class="controle">
+          <label for="sl-theta">Crescimento do PIB nominal <output id="out-theta"></output></label>
+          <input type="range" id="sl-theta" min="3" max="12" step="0.25" value="7">
+        </div>
+        <div class="controle">
+          <label for="sl-pb">Resultado primário (% do PIB) <output id="out-pb"></output></label>
+          <input type="range" id="sl-pb" min="-3" max="5" step="0.1" value="-0.5">
+        </div>
+        <div class="controle">
+          <label for="sl-phi">Dívida indexada à Selic <output id="out-phi"></output></label>
+          <input type="range" id="sl-phi" min="20" max="90" step="0.5" value="56.9">
+        </div>
+
+        <div class="chave">
+          <button type="button" role="switch" aria-checked="false" id="bt-reacao" class="chave__botao">
+            <span class="chave__trilho" aria-hidden="true"><span class="chave__pino"></span></span>
+            Ativar reação de mercado <small>(prêmio de risco &amp; câmbio)</small>
+          </button>
+        </div>
+        <div class="controle controle--reacao" id="ctl-kappa" hidden>
+          <label for="sl-kappa"><span>Sensibilidade do prêmio, κ</span> <output id="out-kappa"></output></label>
+          <input type="range" id="sl-kappa" min="0" max="2" step="0.05" value="1">
+          <p class="nota">Pontos de prêmio exigidos na rolagem por ponto de Selic abaixo do neutro nominal
+            (juro real neutro de 5% + inflação esperada). κ é o parâmetro que a Onda 2 vai estimar.</p>
+        </div>
+        <button type="button" class="link-botao" id="bt-reset-divida">Restaurar calibração-base</button>
+      </div>
+
+      <div class="resultados">
+        <div class="cards" id="cards-divida" aria-live="polite">
+          <div class="card"><p class="card__rot">Dívida bruta em 2036</p><p class="card__val" id="c-d10">–</p><p class="card__sub" id="c-d10-sub"></p></div>
+          <div class="card"><p class="card__rot">Primário estabilizador hoje, <i>pb*</i></p><p class="card__val" id="c-pb0">–</p><p class="card__sub" id="c-pb0-sub"></p></div>
+          <div class="card"><p class="card__rot"><i>pb*</i> nas condições de 2036</p><p class="card__val" id="c-pb10">–</p><p class="card__sub" id="c-pb10-sub"></p></div>
+          <div class="card card--reacao"><p class="card__rot">Inflação em 2036</p><p class="card__val" id="c-pi10">–</p><p class="card__sub" id="c-pi10-sub"></p></div>
+        </div>
+        <figure class="grafico">
+          <figcaption><strong>Dívida bruta do governo geral</strong> · % do PIB</figcaption>
+          <div id="g-divida" class="plot plot--alto" role="img" aria-label="Trajetória da dívida bruta em proporção do PIB, 2026 a 2036"></div>
+        </figure>
+        <figure class="grafico">
+          <figcaption><strong>Onde o corte deixa de ajudar</strong> · dívida em 2036 para cada Selic, % do PIB</figcaption>
+          <div id="g-varredura" class="plot" role="img" aria-label="Dívida em 2036 em função da Selic, com e sem reação de mercado"></div>
+          <p class="leitura" id="leitura-varredura"></p>
+        </figure>
+      </div>
+    </div>
+
+    <details class="metodo">
+      <summary>Como o simulador calcula (camada técnica)</summary>
+      <div class="metodo__corpo">
+        <p><strong>Composição.</strong> Custo implícito
+          \(r_t = \phi\,selic_t + (1-\phi)\,c_t + p_t + \psi(\pi_t-\pi_0)\), em que \(\phi\) é a fatia indexada à Selic,
+          \(c_t\) o custo da parcela não-Selic (reprecifica 20% ao ano em direção à Selic), \(p_t\) o prêmio de risco do estoque e
+          \(\psi = 19{,}9\%\) a fatia atrelada ao IPCA.</p>
+        <p><strong>Reação de mercado.</strong> Hiato de credibilidade \(g_t=\max(0,\ r^n+\pi^e_t-selic_t)\), com
+          \(r^n=5\%\) e expectativas adaptativas \(\pi^e_t=\pi_{t-1}\). O prêmio novo, \(\kappa g_t\), entra pela fração que vence em 12 meses:
+          \(p_t=(1-m)\,p_{t-1}+m\,\kappa g_t\), \(m=26{,}8\%\). Depreciação \(\Delta e_t = 3\,g_t\), repasse de 10% para a inflação,
+          persistência 0,5; a inflação maior eleva \(\theta_t\) (erosão do estoque) e o custo da parcela em IPCA, e a depreciação
+          reavalia os 4,6% de dívida cambial.</p>
+        <p><strong>Calibração-base.</strong> BCB, Nota de Estatísticas Fiscais de set/2026: dívida bruta de 82,9% do PIB, juro implícito de 13,0%,
+          56,9% indexada à Selic, 26,8% vencendo em 12 meses. O motor reproduz a conta do dossiê de referência
+          (custo de 12,7%, PIB nominal de 7% e primário zero ⇒ ~138% do PIB em 2036) e a elasticidade do BCB (~0,48 p.p. do PIB por ponto de Selic).</p>
+        <p class="conferencia" id="conferencia"></p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============================================================ BLOCO 2 -->
+<section class="bloco bloco--alt" id="taylor">
+  <div class="largura">
+    <header class="bloco__cabeca">
+      <p class="bloco__num">Bloco 2</p>
+      <h2>O interruptor de Taylor</h2>
+      <p class="bloco__lide">
+        A equação de Fisher, \(i = r + \pi^e\), é comum às duas escolas. O que as separa é a regra de política.
+        Com \(i = k\pi + z\), em que \(z\) é a postura do Banco Central, o equilíbrio de longo prazo é
+        \(\pi = \frac{z-r}{1-k}\) (Loyo, 2017). Mova \(k\) e veja o sinal de um aperto virar ao cruzar \(k=1\).
+      </p>
+    </header>
+
+    <div class="painel">
+      <div class="controles">
+        <div class="controle">
+          <label for="sl-k"><span>Reação à inflação, <i>k</i></span> <output id="out-k"></output></label>
+          <input type="range" id="sl-k" min="0.2" max="2.5" step="0.05" value="1.5">
+        </div>
+        <div class="controle">
+          <label for="sl-dz"><span>Mudança de postura, Δ<i>z</i></span> <output id="out-dz"></output></label>
+          <input type="range" id="sl-dz" min="-3" max="3" step="0.25" value="1">
+          <p class="nota">Positivo = aperto. Juro real neutro r = 5%; inflação inicial de 3%.</p>
+        </div>
+        <div class="equacao" id="eq-taylor" aria-live="polite"></div>
+        <div class="veredito" id="veredito-taylor" aria-live="polite"></div>
+      </div>
+      <div class="resultados">
+        <figure class="grafico">
+          <figcaption><strong>Efeito de longo prazo do aperto</strong> · variação da inflação de equilíbrio, p.p.</figcaption>
+          <div id="g-taylor" class="plot" role="img" aria-label="Variação da inflação de equilíbrio em função de k"></div>
+        </figure>
+        <figure class="grafico">
+          <figcaption><strong>Caminho da inflação depois do aperto</strong> · % a.a.</figcaption>
+          <div id="g-taylor-traj" class="plot" role="img" aria-label="Trajetória da inflação com expectativas racionais e com aprendizado"></div>
+          <p class="leitura" id="leitura-taylor"></p>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ BLOCO 3 -->
+<section class="bloco" id="regimes">
+  <div class="largura">
+    <header class="bloco__cabeca">
+      <p class="bloco__num">Bloco 3</p>
+      <h2>Regimes: monetário × fiscal</h2>
+      <p class="bloco__lide">
+        Pela teoria fiscal do nível de preços, o valor real da dívida tem de igualar o valor presente dos superávits:
+        $$\frac{B_{t-1}}{P_t} = E_t\sum_{j=0}^{\infty}\beta^j s_{t+j}$$
+        A equação vale nos dois regimes; muda quem se ajusta. Abaixo, a resposta de um modelo Novo Keynesiano
+        a um <strong>corte de 1 p.p. no juro</strong>, resolvido em Python com expectativas racionais.
+      </p>
+    </header>
+
+    <div class="abas" role="tablist" aria-label="Cenários" id="abas-regimes">
+      <button role="tab" aria-selected="true" data-cenario="dominancia_monetaria">Dominância Monetária</button>
+      <button role="tab" aria-selected="false" data-cenario="dominancia_fiscal">Dominância Fiscal (TFNP)</button>
+      <button role="tab" aria-selected="false" data-cenario="antecipacao">Efeito Antecipação</button>
+    </div>
+    <p class="cenario__desc" id="desc-cenario"></p>
+    <ul class="legenda" id="legenda-regimes"></ul>
+    <div class="multiplos" id="g-regimes"></div>
+    <p class="leitura" id="leitura-regimes"></p>
+    <p class="nota nota--erro" id="erro-json" hidden></p>
+
+    <details class="metodo">
+      <summary>O modelo por trás das curvas (camada técnica)</summary>
+      <div class="metodo__corpo">
+        <p>Modelo trimestral linearizado, desvios do estado estacionário:</p>
+        <p>$$x_t = E_t x_{t+1} - \sigma(i_t - E_t\pi_{t+1}),\qquad \pi_t = \beta E_t\pi_{t+1} + \kappa x_t,\qquad i_t = \phi_\pi \pi_t + u_t$$</p>
+        <p>$$q_t = \omega\beta E_t q_{t+1} - i_t,\qquad \beta v_t = v_{t-1} + (\omega\beta q_t - q_{t-1}) - \pi_t - s_t,\qquad s_t = \alpha v_{t-1} + w_t$$</p>
+        <p>Dominância monetária: \(\phi_\pi = 1{,}5\), \(\alpha = 0{,}05\). Dominância fiscal: \(\phi_\pi = 0{,}8\), \(\alpha = 0\).
+          \(\omega = 0\) é dívida reprecificada a cada período (LFT); \(\omega = 0{,}95\), prefixada longa. A perda de lastro é uma
+          queda persistente dos superávits (\(w\)), com valor presente de ~2,3% da dívida. Câmbio pela paridade descoberta real.
+          Calibração: \(\beta=0{,}99\), \(\sigma=1\), \(\kappa=0{,}1\), \(\rho=0{,}75\). Resolvido pelo método de Klein (QZ) com
+          checagem de Blanchard–Kahn; os resíduos de todas as equações são inferiores a \(10^{-10}\).</p>
+        <p class="nota">Limitações: economia fechada no bloco real (câmbio recursivo, sem retroalimentação), dívida de maturidade
+          geométrica única e choques ilustrativos. Serve para mostrar mecanismos, não para prever magnitudes.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============================================================ BLOCO 4 -->
+<section class="bloco bloco--alt" id="mapa">
+  <div class="largura">
+    <header class="bloco__cabeca">
+      <p class="bloco__num">Bloco 4</p>
+      <h2>O mapa do debate</h2>
+      <p class="bloco__lide">O que a proposta afirma, o que os críticos respondem e o que o laboratório permite testar.</p>
+    </header>
+
+    <div class="tabela-rolagem">
+      <table class="tabela">
+        <thead>
+          <tr><th scope="col">A proposta afirma</th><th scope="col">O contra-argumento</th><th scope="col">O que o laboratório mostra</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>O juro é o “único motor” da dívida.</td>
+            <td>Na última década o juro real domina a conta da dívida bruta; na série longa da dívida líquida, é o primário que separa a queda até 2013 da alta desde 2014.</td>
+            <td><a href="#divida">Bloco 1</a>: sem reação, o corte sempre reduz a dívida. Com reação e κ &gt; 1, cortar abaixo do neutro nominal passa a elevá-la.</td>
+          </tr>
+          <tr>
+            <td>No longo prazo, juro alto causa inflação alta.</td>
+            <td>Só com uma regra que viole o princípio de Taylor e um critério de equilíbrio não convencional; com aprendizado, o resultado some (García-Schmidt e Woodford).</td>
+            <td><a href="#taylor">Bloco 2</a>: com k &lt; 1 e expectativas racionais, sim. Com aprendizado adaptativo, o mesmo equilíbrio é instável.</td>
+          </tr>
+          <tr>
+            <td>Com dívida em LFT, cortar juros não gera inflação.</td>
+            <td>Supõe que os investidores continuem a financiar o governo a juros menores; se o corte for lido como perda de lastro, a própria teoria fiscal prevê inflação.</td>
+            <td><a href="#regimes">Bloco 3</a>: na dominância fiscal com LFT, o corte reduz a inflação, mas, com perda de lastro, ela sobe com força.</td>
+          </tr>
+          <tr>
+            <td>A curva de Phillips é horizontal.</td>
+            <td>A pandemia mostrou atividade aquecida com inflação alta; nos ciclos da Selic e em dados de alta frequência, a alta de juros reduz a inflação esperada.</td>
+            <td><span class="selo">Onda 2</span> Estimação com dados do BCB e do Focus (curva de Phillips e estudo de eventos do Copom).</td>
+          </tr>
+          <tr>
+            <td>As reservas bastam para conter o câmbio.</td>
+            <td>São o último colchão do país; a China gastou cerca de US$ 1 trilhão em 2015.</td>
+            <td><a href="#regimes">Bloco 3</a>, antecipação: o câmbio se move no anúncio. <span class="selo">Onda 2</span> mede a reação do câmbio e do CDS nas janelas do Copom.</td>
+          </tr>
+          <tr>
+            <td>O conselho fiscal-monetário é coordenação.</td>
+            <td>Subordina a política monetária à necessidade fiscal; países com passado de monetização precisam de bancos centrais mais agressivos (Jácome et al., 2026).</td>
+            <td><a href="#regimes">Bloco 3</a>: é a passagem do regime monetário para o fiscal, em que o nível de preços vira a variável de ajuste.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fonte">Teses e contra-argumentos organizados a partir de Wilher, V. (2026), <i>O debate dos juros</i>, Análise Macro,
+      que reúne o artigo de Lara Resende (25/09/2026) e o debate de 2017 no <i>Valor Econômico</i> (Lara Resende, Lisboa e Pessoa,
+      Schwartsman, Loyo, Senna, Lopes, Barbosa) e Gonçalves (2017).</p>
+
+    <!-- ======================================================== CAPTAÇÃO
+         Para ativar: preencha data-endpoint com a URL do seu provedor e ajuste os nomes dos campos.
+         - Brevo:     endpoint do formulário embutido (Contatos > Formulários > Compartilhar > HTML) ; campos EMAIL, FIRSTNAME
+         - Kit:       https://app.kit.com/forms/<ID>/subscriptions ; campos email_address, first_name
+         - Substack:  troque o <form> pelo <iframe src="https://SEU.substack.com/embed">
+         Com data-endpoint vazio, o formulário mostra um aviso e não envia nada. -->
+    <aside class="captacao" id="cadastro">
+      <div class="captacao__texto">
+        <p class="sobretitulo">Próximo: Onda 2 · Laboratório Empírico</p>
+        <h2>A teoria mostra que os dois resultados são possíveis. Os dados dizem qual vale para o Brasil.</h2>
+        <ul class="beneficios">
+          <li>Dossiê empírico em PDF: SVAR e estudo de eventos do Copom com dados do BCB, do Focus e da curva de juros</li>
+          <li>Notebooks em Python para auditar e replicar cada número</li>
+          <li>Aviso mensal quando o painel for atualizado com a Nota Fiscal do BCB</li>
+        </ul>
+      </div>
+      <form class="form" id="form-cadastro" method="post" action="#" data-endpoint="" data-campo-nome="FIRSTNAME" data-campo-email="EMAIL" novalidate>
+        <label for="f-nome">Nome</label>
+        <input id="f-nome" name="nome" type="text" autocomplete="given-name" placeholder="Seu nome" required>
+        <label for="f-email">E-mail</label>
+        <input id="f-email" name="email" type="email" autocomplete="email" placeholder="seu@email.com" required>
+        <!-- honeypot anti-spam -->
+        <input type="text" name="website" tabindex="-1" autocomplete="off" class="oculto" aria-hidden="true">
+        <button type="submit">Quero receber a Onda 2</button>
+        <p class="form__nota">Gratuito. Só nome e e-mail, sem WhatsApp. Sai com um clique.</p>
+        <p class="form__status" id="form-status" role="status"></p>
+      </form>
+    </aside>
+  </div>
+</section>
+
+</main>
+
+<footer class="rodape">
+  <div class="largura">
+    <p><strong>O Debate dos Juros</strong> · Laboratório Teórico (Onda 1). Toda curva desta página é calculada:
+      em tempo real pelo motor em JavaScript ou carregada de cenários gerados e testados em Python.</p>
+    <p><a href="https://github.com/economistacase/debate-juros">Código e testes no GitHub</a> ·
+      <a href="https://economistacase.github.io/">Observatório Macro</a> · Material didático; não é recomendação de investimento.</p>
+  </div>
+</footer>
+
+</body>
+</html>

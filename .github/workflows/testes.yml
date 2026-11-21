@@ -1,0 +1,17 @@
+# Onda 1: valida o motor teórico a cada push. (Onda 2 acrescentará a atualização mensal com dados do BCB.)
+name: testes
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  teoria:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Gera cenários e roda testes
+        run: python build.py
