@@ -47,29 +47,54 @@
 
   // ================================================================= BLOCO 1 — dívida
   const sl = {
-    selic: $("sl-selic"), theta: $("sl-theta"), pb: $("sl-pb"), phi: $("sl-phi"), kappa: $("sl-kappa"),
+    selic: $("sl-selic"), theta: $("sl-theta"), pb: $("sl-pb"), phi: $("sl-phi"), gamma: $("sl-gamma"),
   };
   const btReacao = $("bt-reacao");
-  const estado = { reacao: false };
+  // preset: null | "status" | "proposta". Na proposta, a Selic segue a trajetória anual de Lara Resende (2026).
+  const estado = { reacao: false, preset: "status" };
+  const BASE = M.PARAMETROS_BASE;
 
   function parametrosDivida() {
+    const selic = estado.preset === "proposta" ? M.TRAJETORIA_PROPOSTA.slice() : +sl.selic.value / 100;
     return {
-      selic: +sl.selic.value / 100, theta: +sl.theta.value / 100, pb: +sl.pb.value / 100,
-      phi: +sl.phi.value / 100, kappa: +sl.kappa.value, reacao: estado.reacao,
+      selic, theta: +sl.theta.value / 100, pb: +sl.pb.value / 100,
+      phi: +sl.phi.value / 100, gamma: +sl.gamma.value, reacao: estado.reacao,
     };
+  }
+
+  function marcarPreset() {
+    document.querySelectorAll("[data-preset]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.preset === estado.preset)));
+  }
+
+  function aplicarPreset(nome) {
+    estado.preset = nome;
+    sl.theta.value = BASE.theta * 100;
+    sl.phi.value = BASE.phi * 100;
+    if (nome === "status") {
+      sl.selic.value = BASE.selic0 * 100;
+      sl.pb.value = BASE.pb * 100;
+    } else {
+      sl.selic.value = M.TRAJETORIA_PROPOSTA[0] * 100;
+      sl.pb.value = 0;
+    }
+    marcarPreset();
+    renderBloco1();
   }
 
   function renderDivida() {
     const p = parametrosDivida();
-    $("out-selic").textContent = pct(p.selic, 2);
+    const trajetoria = Array.isArray(p.selic);
+    $("out-selic").textContent = trajetoria
+      ? pct(M.TRAJETORIA_PROPOSTA[0], 1) + " → " + pct(M.TRAJETORIA_PROPOSTA[M.HORIZONTE - 1], 1)
+      : pct(p.selic, 2);
     $("out-theta").textContent = pct(p.theta, 2);
     $("out-pb").textContent = pct(p.pb, 1);
     $("out-phi").textContent = pct(p.phi, 1);
-    $("out-kappa").textContent = num(p.kappa, 2);
+    $("out-gamma").textContent = num(p.gamma, 2);
 
     const mec = M.simularDivida(Object.assign({}, p, { reacao: false }));
     const sim = p.reacao ? M.simularDivida(p) : mec;
-    const statusQuo = M.simularDivida(Object.assign({}, p, { selic: M.PARAMETROS_BASE.selic, reacao: false }));
+    const statusQuo = M.simularDivida(Object.assign({}, p, { selic: BASE.selic0, reacao: false }));
     const H = M.HORIZONTE;
     const y = (s) => s.divida.map((v) => v * 100);
 
@@ -77,7 +102,7 @@
     const d10 = sim.divida[H];
     $("c-d10").textContent = pct(d10, 1);
     $("c-d10-sub").textContent = sinal((d10 - sim.divida[0]) * 100, 1) + " p.p. desde 2026";
-    const pb0 = M.primarioEstabilizador(M.PARAMETROS_BASE.d0, M.PARAMETROS_BASE.custo0, p.theta);
+    const pb0 = M.primarioEstabilizador(BASE.d0, BASE.custo0, p.theta);
     $("c-pb0").textContent = pct(pb0, 1);
     $("c-pb0-sub").textContent = "juro implícito de 13% e PIB nominal de " + pct(p.theta, 1) + "; primário atual: " + pct(p.pb, 1);
     $("c-pb10").textContent = pct(sim.pb_estabilizador, 1);
@@ -89,8 +114,15 @@
 
     // trajetória
     const traces = [];
-    if (Math.abs(p.selic - M.PARAMETROS_BASE.selic) > 1e-9) {
-      traces.push(linha(sim.ano, y(statusQuo), "Selic em 15% (status quo)", cor("ref"), { line: { color: cor("ref"), width: 1.5, dash: "dash" } }));
+    const rotSQ = "Selic mantida em " + pct(BASE.selic0, 1) + " (demais parâmetros iguais)";
+    if (trajetoria || Math.abs(p.selic - BASE.selic0) > 1e-9) {
+      traces.push(linha(sim.ano, y(statusQuo), rotSQ, cor("ref"), { line: { color: cor("ref"), width: 1.5, dash: "dash" } }));
+    }
+    let aritmetica = null;
+    if (trajetoria) {
+      aritmetica = M.trajetoriaCustoCaminho(BASE.d0, M.TRAJETORIA_PROPOSTA, p.theta, p.pb);
+      traces.push(linha(sim.ano, aritmetica.map((v) => v * 100), "Aritmética da proposta (custo imposto)", cor("s4"),
+        { line: { color: cor("s4"), width: 2, dash: "dash" } }));
     }
     traces.push(linha(sim.ano, y(mec), "Mundo mecânico", cor("s1"), p.reacao ? { line: { color: cor("s1"), width: 2, dash: "dot" } } : {}));
     if (p.reacao) traces.push(linha(sim.ano, y(sim), "Com reação de mercado", cor("s2")));
@@ -101,22 +133,32 @@
     }));
     plotar("g-divida", traces, layoutBase({
       margin: { l: 48, r: 48, t: 12, b: 36 },
-      showlegend: true, legend: { orientation: "h", y: 1.1, x: 0, font: { size: 12 }, entrywidthmode: "pixels", entrywidth: 200 },
+      showlegend: true, legend: { orientation: "h", y: 1.1, x: 0, font: { size: 12 }, entrywidthmode: "pixels", entrywidth: 240 },
       yaxis: { ticksuffix: "%" }, xaxis: { dtick: 2, range: [2025.8, 2036.2] }, annotations: anotacoes,
       shapes: [{ type: "line", xref: "paper", x0: 0, x1: 1, y0: sim.divida[0] * 100, y1: sim.divida[0] * 100,
         line: { color: cor("tinta-3"), width: 1, dash: "dot" } }],
     }));
 
-    // varredura em Selic
+    const leituraD = $("leitura-divida");
+    if (trajetoria) {
+      leituraD.textContent = "Mesma trajetória de juros, dois resultados. Na aritmética da proposta, o custo médio cai para 7,5% já em 2027 e a dívida chega a " +
+        pct(aritmetica[H], 1) + " do PIB em 2036. No simulador, só a parcela atrelada à Selic (" + pct(p.phi, 1) + ") acompanha o corte de imediato; " +
+        "o resto reprecifica na rolagem, e o custo médio de 2027 fica em " + pct(mec.custo[1], 1) + ". Resultado: " + pct(mec.divida[H], 1) +
+        " em 2036" + (p.reacao ? ", e " + pct(sim.divida[H], 1) + " com reação de mercado." : ". Ative a reação de mercado para ver o efeito do prêmio de risco.");
+    } else {
+      leituraD.textContent = "";
+    }
+
+    // varredura em Selic constante
     const vMec = M.varrerSelic(Object.assign({}, p, { reacao: false }));
     const vRea = M.varrerSelic(Object.assign({}, p, { reacao: true }));
     const xs = vMec.selics.map((s) => s * 100);
-    const neutro = (M.PARAMETROS_BASE.r_neutro + M.PARAMETROS_BASE.pi0) * 100;
+    const neutro = (BASE.r_neutro + BASE.pi0) * 100;
     const atual = p.reacao ? vRea : vMec;
-    const iAtual = atual.selics.findIndex((s) => Math.abs(s - p.selic) < 1e-6);
+    const iAtual = trajetoria ? -1 : atual.selics.findIndex((s) => Math.abs(s - p.selic) < 1e-6);
     const tracesV = [
       linha(xs, vMec.finais.map((v) => v * 100), "Mundo mecânico", cor("s1"), { hovertemplate: "%{y:.1f}%<extra>Mecânico</extra>" }),
-      linha(xs, vRea.finais.map((v) => v * 100), "Com reação (κ = " + num(p.kappa, 2) + ")", cor("s2"), { hovertemplate: "%{y:.1f}%<extra>Com reação</extra>" }),
+      linha(xs, vRea.finais.map((v) => v * 100), "Com reação (γ = " + num(p.gamma, 2) + ")", cor("s2"), { hovertemplate: "%{y:.1f}%<extra>Com reação</extra>" }),
     ];
     if (iAtual >= 0) {
       tracesV.push({ x: [xs[iAtual]], y: [atual.finais[iAtual] * 100], type: "scatter", mode: "markers", name: "Sua escolha",
@@ -124,7 +166,7 @@
     }
     plotar("g-varredura", tracesV, layoutBase({
       showlegend: true, legend: { orientation: "h", y: 1.14, x: 0, entrywidthmode: "pixels", entrywidth: 200 },
-      xaxis: { title: { text: "Selic média 2027–2036", font: { size: 11 } }, ticksuffix: "%", dtick: 2 },
+      xaxis: { title: { text: "Selic constante 2027–2036", font: { size: 11 } }, ticksuffix: "%", dtick: 2 },
       yaxis: { ticksuffix: "%" }, hovermode: "x unified", margin: { l: 48, r: 16, t: 24, b: 48 },
       shapes: [{ type: "line", x0: neutro, x1: neutro, yref: "paper", y0: 0, y1: 1, line: { color: cor("tinta-3"), width: 1, dash: "dot" } }],
       annotations: [{ x: neutro, yref: "paper", y: 0.02, text: "neutro nominal " + num(neutro, 1) + "%", showarrow: false,
@@ -136,26 +178,33 @@
       leitura.textContent = "No mundo mecânico, cada corte reduz a dívida: a linha azul só desce. É a aritmética da proposta. " +
         "Ative a reação de mercado para ver o que muda abaixo do juro neutro nominal.";
     } else if (vRea.selicMin > 0.021) {
-      leitura.textContent = "Com κ = " + num(p.kappa, 2) + ", a dívida de 2036 é mínima com a Selic em " + pct(vRea.selicMin, 2) +
+      leitura.textContent = "Com γ = " + num(p.gamma, 2) + ", a dívida de 2036 é mínima com a Selic em " + pct(vRea.selicMin, 2) +
         " (" + pct(vRea.dividaMin, 1) + " do PIB). Abaixo disso, o prêmio de risco e o câmbio passam a pesar mais do que o alívio dos juros: o corte forçado eleva a dívida.";
     } else {
-      leitura.textContent = "Com κ = " + num(p.kappa, 2) + ", o corte ainda reduz a dívida em toda a faixa, mas menos que no mundo mecânico, e às custas da inflação: " +
-        pct(M.simularDivida(Object.assign({}, p, { selic: 0.05 })).inflacao[H], 1) + " em 2036 com Selic de 5%. Aumente κ acima de 1 para ver o corte se inverter.";
+      leitura.textContent = "Com γ = " + num(p.gamma, 2) + ", o corte ainda reduz a dívida em toda a faixa, mas menos que no mundo mecânico, e às custas da inflação: " +
+        pct(M.simularDivida(Object.assign({}, p, { selic: 0.05 })).inflacao[H], 1) + " em 2036 com Selic de 5%. Aumente γ acima de 1 para ver o corte se inverter.";
     }
+
+    // sensibilidade do simulador (camada técnica)
+    const sens = $("sens-simulador");
+    if (sens) sens.textContent = num(M.sensibilidadeSelic({ phi: p.phi, theta: p.theta, pb: p.pb }), 2);
   }
 
-  function renderBloco1() { requestAnimationFrame(renderDivida); }
-  Object.values(sl).forEach((el) => el.addEventListener("input", renderBloco1));
+  function renderBloco1() { renderDivida(); }   // renderização direta: rAF é suspenso pelo navegador em várias situações
+  Object.entries(sl).forEach(([nome, el]) => el.addEventListener("input", () => {
+    // mover a Selic sai do preset da proposta (a trajetória vira Selic constante)
+    if (nome === "selic" && estado.preset === "proposta") estado.preset = null;
+    else if (nome !== "gamma" && estado.preset === "status") estado.preset = null;
+    marcarPreset();
+    renderBloco1();
+  }));
   btReacao.addEventListener("click", () => {
     estado.reacao = !estado.reacao;
     btReacao.setAttribute("aria-checked", String(estado.reacao));
-    $("ctl-kappa").hidden = !estado.reacao;
+    $("ctl-gamma").hidden = !estado.reacao;
     renderBloco1();
   });
-  $("bt-reset-divida").addEventListener("click", () => {
-    sl.selic.value = 15; sl.theta.value = 7; sl.pb.value = -0.5; sl.phi.value = 56.9; sl.kappa.value = 1;
-    renderBloco1();
-  });
+  document.querySelectorAll("[data-preset]").forEach((b) => b.addEventListener("click", () => aplicarPreset(b.dataset.preset)));
 
   // ================================================================= BLOCO 2 — Fisher-Taylor
   const R_NEUTRO = 5, PI_INICIAL = 3;
@@ -193,7 +242,7 @@
     const ksT = [], ysT = [], ksN = [], ysN = [];
     for (let i = 20; i <= 250; i++) {
       const kk = i / 100;
-      if (Math.abs(1 - kk) < 0.025) continue;
+      if (Math.abs(1 - kk) < 0.04) continue;
       const efeito = dz / (1 - kk);
       (kk > 1 ? ksT : ksN).push(kk);
       (kk > 1 ? ysT : ysN).push(efeito);
@@ -243,16 +292,16 @@
     else leit.textContent = "Com k < 1, as expectativas racionais saltam para o equilíbrio neofisheriano, mas com aprendizado adaptativo a inflação se afasta dele" +
       (divergiu ? " e diverge (a linha sai do gráfico)." : ".") + " É o argumento de García-Schmidt e Woodford: o resultado depende do critério de seleção de equilíbrio.";
   }
-  ["sl-k", "sl-dz"].forEach((id) => $(id).addEventListener("input", () => requestAnimationFrame(renderTaylor)));
+  ["sl-k", "sl-dz"].forEach((id) => $(id).addEventListener("input", renderTaylor));
 
   // ================================================================= BLOCO 3 — regimes
   const PAINEIS = [
-    ["inflacao", "Inflação", "p.p. a.a."],
-    ["juro_nominal", "Juro nominal (Selic)", "p.p. a.a."],
-    ["juro_real", "Juro real", "p.p. a.a."],
-    ["cambio", "Câmbio nominal", "%, alta = depreciação"],
-    ["divida_pib", "Dívida/PIB", "pontos do PIB"],
-    ["hiato", "Hiato do produto", "%"],
+    ["inflacao", "Inflação", "desvio, p.p. a.a."],
+    ["juro_nominal", "Juro nominal (Selic)", "desvio, p.p. a.a."],
+    ["juro_real", "Juro real", "desvio, p.p. a.a."],
+    ["cambio", "Câmbio nominal", "desvio %, alta = depreciação"],
+    ["divida_pib", "Dívida/PIB", "desvio, pontos do PIB"],
+    ["hiato", "Hiato do produto", "desvio, %"],
   ];
   // cor fixa por entidade (regime/composição), nunca por posição
   const COR_LINHA = { dm: "s1", dm_anunciado: "s1", df_lft: "s2", df_anunciado: "s2", df_pre: "s3", df_lastro: "s4" };
@@ -305,7 +354,7 @@
     // leitura calculada a partir do JSON
     const partes = cen.linhas.filter((l) => l.papel !== "referencia").map((l) =>
       l.rotulo + ": inflação " + sinal(l.series.inflacao[0]) + " p.p. no impacto, câmbio " + sinal(l.series.cambio[dados.trimestres.length - 1], 1) + "% em 5 anos");
-    $("leitura-regimes").textContent = "Corte de 1 p.p. no juro. " + partes.join("; ") + ".";
+    $("leitura-regimes").textContent = "Corte de 100 pontos-base no juro. " + partes.join("; ") + ".";
   }
 
   document.querySelectorAll("#abas-regimes button").forEach((b) => {
@@ -373,11 +422,40 @@
         ignoredClasses: ["equacao"], throwOnError: false,
       });
     }
+    lerCenarioDaURL();
     renderDivida();
     renderTaylor();
     carregarCenarios();
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", renderTudo);
   }
+
+  // ================================================================= link compartilhável do Bloco 1
+  // ?cen=proposta|status&selic=7.5&theta=7&pb=0&phi=56.9&reacao=1&gamma=1.5#divida
+  function lerCenarioDaURL() {
+    const q = new URLSearchParams(location.search);
+    if (![...q.keys()].length) return;
+    if (q.get("cen") === "proposta") aplicarPreset("proposta");
+    const fixar = (nome, el) => { if (q.has(nome) && isFinite(+q.get(nome))) el.value = +q.get(nome); };
+    fixar("theta", sl.theta); fixar("pb", sl.pb); fixar("phi", sl.phi); fixar("gamma", sl.gamma);
+    if (q.has("selic")) { fixar("selic", sl.selic); estado.preset = null; }
+    else if (q.get("cen") !== "proposta" && (q.has("theta") || q.has("pb") || q.has("phi"))) estado.preset = null;
+    if (q.get("reacao") === "1") {
+      estado.reacao = true;
+      btReacao.setAttribute("aria-checked", "true");
+      $("ctl-gamma").hidden = false;
+    }
+    marcarPreset();
+  }
+
+  $("bt-compartilhar").addEventListener("click", async () => {
+    const q = new URLSearchParams();
+    if (estado.preset === "proposta") q.set("cen", "proposta"); else q.set("selic", sl.selic.value);
+    q.set("theta", sl.theta.value); q.set("pb", sl.pb.value); q.set("phi", sl.phi.value);
+    if (estado.reacao) { q.set("reacao", "1"); q.set("gamma", sl.gamma.value); }
+    const url = location.origin + location.pathname + "?" + q.toString() + "#divida";
+    const st = $("status-compartilhar");
+    try { await navigator.clipboard.writeText(url); st.textContent = "Link copiado. Quem abrir verá este mesmo cenário."; }
+    catch (e) { st.textContent = url; }
+  });
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", iniciar);
   else iniciar();

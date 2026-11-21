@@ -3,23 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>O Debate dos Juros · Laboratório</title>
-  <meta name="description" content="Laboratório interativo sobre o debate da Selic: dinâmica da dívida com reação de mercado, princípio de Taylor vs. neofisherianismo e dominância monetária vs. fiscal (TFNP).">
-  <meta property="og:title" content="O Debate dos Juros — Laboratório Teórico">
-  <meta property="og:description" content="A conta da dívida fecha com juros mais baixos. A pergunta é se os juros ficariam baixos depois do anúncio. Teste você mesmo.">
+  <title>Painel Juros — O Debate dos Juros no Brasil</title>
+  <meta name="description" content="Por que o juro brasileiro é tão alto? Dados do Banco Central, seis lentes teóricas, do consenso à heterodoxia, e um laboratório interativo para testar cada uma.">
+  <meta property="og:title" content="Painel Juros — O Debate dos Juros no Brasil, por Raimundo Casé">
+  <meta property="og:description" content="Do consenso dos bancos centrais à heterodoxia: por que o juro brasileiro é alto e o que aconteceria se caísse. Dados, teoria e um laboratório interativo.">
   <meta property="og:type" content="website">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=048496f3a9">
+
+  <!-- Guarda: se um script da própria página falhar (ex.: versão antiga em cache), avisa em vez de deixar blocos vazios. -->
+  <script>
+    (function () {
+      var avisado = false;
+      window.addEventListener("error", function (e) {
+        if (avisado || !e.filename || e.filename.indexOf(location.host) === -1) return;
+        avisado = true;
+        var mostrar = function () {
+          var faixa = document.createElement("div");
+          faixa.className = "faixa-erro";
+          faixa.setAttribute("role", "alert");
+          faixa.innerHTML = "Parte da página não carregou corretamente. <button type='button'>Recarregar</button>" +
+            " <small>(se persistir, use Ctrl+F5)</small>";
+          faixa.querySelector("button").onclick = function () { location.reload(); };
+          document.body.insertBefore(faixa, document.body.firstChild);
+        };
+        if (document.body) mostrar(); else document.addEventListener("DOMContentLoaded", mostrar);
+        if (window.console) console.error("[Painel Juros] erro em", e.filename, e.lineno, e.message);
+      });
+    })();
+  </script>
 
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js"></script>
-  <script defer src="js/modelo.js"></script>
-  <script defer src="js/app.js"></script>
+  <script defer src="js/modelo.js?v=be6f4831c7"></script>
+  <script defer src="js/app.js?v=0e9f169620"></script>
+  <script defer src="js/dados.js?v=2bb47a981d"></script>
+  <script defer src="js/pagina.js?v=5d1b2cbb51"></script>
 </head>
 <body>
 
@@ -41,21 +65,246 @@
 <!-- ============================================================ ABERTURA -->
 <section class="hero">
   <div class="largura">
-    <p class="sobretitulo">Laboratório Teórico · Onda 1</p>
-    <h1>O Debate dos <em>Juros</em></h1>
-    <p class="lide">
-      Em setembro de 2026, André Lara Resende propôs derrubar a Selic de forma anunciada, com o argumento
-      de que os juros são o “único motor” da dívida pública. A conta está certa <strong>dados</strong> os juros.
-      Mas nenhuma identidade contábil diz se os juros <strong>ficariam</strong> baixos depois do anúncio:
-      isso depende de como câmbio, prêmio de risco e expectativas reagem. Este laboratório coloca a reação
-      dos agentes no centro, e deixa você mexer nela.
-    </p>
+    <h1>Painel Juros — O Debate dos Juros no Brasil</h1>
+    <p class="subtitulo">Dados do BCB, seis lentes teóricas e um laboratório interativo</p>
+
+    <div class="meta-autor">
+      <div><p class="meta-autor__rot">Autor</p><p class="meta-autor__val">Raimundo Casé - economista</p></div>
+      <div><p class="meta-autor__rot">Dados atualizados em</p><p class="meta-autor__val" id="meta-atualizado">–</p></div>
+      <div><p class="meta-autor__rot">Referência fiscal</p><p class="meta-autor__val">Nota de Estatísticas Fiscais, set/2026</p></div>
+    </div>
+    <button type="button" class="print-btn" id="bt-imprimir">Imprimir / Salvar PDF</button>
+
+    <div class="objetivo">
+      <h2>Objetivo</h2>
+      <p>Por que o juro brasileiro está entre os mais altos do mundo, e o que aconteceria se caísse? A pergunta é antiga e voltou ao
+        centro do debate em 2026, com a proposta de André Lara Resende de derrubar a Selic de forma anunciada. Este painel tem um
+        objetivo didático: organizar a discussão para economistas e não economistas, sem tomar partido de antemão. Ele percorre
+        <strong>os dados</strong> oficiais do Banco Central, as <strong>lentes</strong> com que diferentes tradições os interpretam,
+        do consenso dos bancos centrais à heterodoxia, e um <strong>laboratório</strong> em que cada hipótese pode ser testada.
+        A meta é que o leitor entenda não só o que cada lado afirma, mas por que chega a conclusões diferentes e quais evidências
+        poderiam arbitrar a disputa.</p>
+    </div>
+
     <ol class="roteiro">
-      <li><a href="#divida"><b>1</b><span>A conta da dívida, com e sem reação de mercado</span></a></li>
-      <li><a href="#taylor"><b>2</b><span>O interruptor de Taylor: quando juro alto <em>eleva</em> a inflação</span></a></li>
-      <li><a href="#regimes"><b>3</b><span>Dominância monetária × fiscal: quem se ajusta, o superávit ou o preço?</span></a></li>
-      <li><a href="#mapa"><b>4</b><span>O mapa do debate, ponto a ponto</span></a></li>
+      <li><a href="#dados"><b>1</b><span><strong>Os dados.</strong> Selic, inflação, juro real, dívida e conta fiscal desde 2002</span></a></li>
+      <li><a href="#lentes"><b>2</b><span><strong>As lentes.</strong> Seis explicações, do consenso à heterodoxia, e o que a evidência diz</span></a></li>
+      <li><a href="#laboratorio"><b>3</b><span><strong>O laboratório.</strong> Mexa nas hipóteses e veja por que as lentes divergem</span></a></li>
+      <li><a href="#mapa"><b>4</b><span><strong>O mapa do debate.</strong> Onde as lentes concordam e onde divergem</span></a></li>
+      <li><a href="#episodio"><b>5</b><span><strong>O episódio de 2026.</strong> A proposta de Lara Resende como estudo de caso</span></a></li>
     </ol>
+  </div>
+</section>
+
+<!-- ============================================================ RETRATO FACTUAL (Nota Fiscal do BCB) -->
+<section class="retrato" id="retrato" aria-labelledby="retrato-titulo">
+  <div class="largura">
+    <p class="retrato__rot" id="retrato-titulo">O retrato que ancora o debate · <span id="retrato-ref"></span></p>
+    <div class="retrato__itens" id="retrato-itens"></div>
+    <p class="retrato__fonte" id="retrato-fonte"></p>
+  </div>
+</section>
+
+<!-- ============================================================ PARTE 1 — DADOS -->
+<section class="bloco" id="dados">
+  <div class="largura">
+    <header class="bloco__cabeca">
+      <p class="bloco__num">Parte 1 · O que os dados mostram</p>
+      <h2>Juros, inflação e dívida em números</h2>
+      <p class="bloco__lide">O placar do debate com os dados mais recentes do Banco Central e do boletim Focus.
+        Os números são atualizados automaticamente a partir das séries oficiais.</p>
+    </header>
+
+    <div class="placar" id="placar" aria-live="polite"></div>
+
+    <div class="conta-real">
+      <h3>A conta em uma linha</h3>
+      <p id="conta-real">Carregando dados…</p>
+      <button type="button" class="botao-sec" id="bt-levar">Levar estes números ao laboratório ↓</button>
+    </div>
+
+    <figure class="grafico grafico--largo">
+      <figcaption><strong>O que moveu a dívida bruta, 2016–2025</strong> · contribuições acumuladas, pontos do PIB</figcaption>
+      <div id="g-decomposicao" class="plot plot--alto" role="img" aria-label="Decomposição acumulada da variação da dívida bruta entre dezembro de 2015 e dezembro de 2025"></div>
+      <p class="nota" id="nota-decomposicao"></p>
+    </figure>
+
+    <div class="periodos" role="group" aria-label="Período dos gráficos" id="periodos">
+      <span>Período:</span>
+      <button type="button" data-anos="5">5 anos</button>
+      <button type="button" data-anos="10">10 anos</button>
+      <button type="button" data-desde="2006-12" aria-pressed="true">Desde 2006</button>
+      <button type="button" data-desde="2002-01">Desde 2002</button>
+    </div>
+
+    <div class="grade-dados">
+      <figure class="grafico">
+        <figcaption><strong>Selic e inflação</strong> · % a.a.</figcaption>
+        <ul class="legenda legenda--mini" data-legenda="juros"></ul>
+        <div id="g-dados-juros" class="plot" role="img" aria-label="Selic efetiva, IPCA em 12 meses e expectativa de inflação"></div>
+        <p class="nota">A distância entre a Selic e a inflação é o juro real. A expectativa (Focus) é o que o mercado projeta para os 12 meses seguintes.</p>
+      </figure>
+      <figure class="grafico">
+        <figcaption><strong>Juro real</strong> · % a.a.</figcaption>
+        <ul class="legenda legenda--mini" data-legenda="real"></ul>
+        <div id="g-dados-real" class="plot" role="img" aria-label="Juro real ex ante e ex post"></div>
+        <p class="nota"><i>Ex ante</i>: Selic deflacionada pela inflação esperada (o que importa para decisões). <i>Ex post</i>: pela inflação passada.</p>
+      </figure>
+      <figure class="grafico">
+        <figcaption><strong>Endividamento público</strong> · % do PIB</figcaption>
+        <ul class="legenda legenda--mini" data-legenda="divida"></ul>
+        <div id="g-dados-divida" class="plot" role="img" aria-label="Dívida bruta e dívida líquida em proporção do PIB"></div>
+        <p class="nota">A dívida bruta (governo geral) é a referência do debate; a líquida desconta ativos como reservas e créditos ao BNDES.</p>
+      </figure>
+      <figure class="grafico">
+        <figcaption><strong>A conta fiscal em 12 meses</strong> · % do PIB</figcaption>
+        <ul class="legenda legenda--mini" data-legenda="fiscal"></ul>
+        <div id="g-dados-fiscal" class="plot" role="img" aria-label="Juros nominais e resultado primário em 12 meses"></div>
+        <p class="nota">Juros nominais pagos pelo setor público e resultado primário (acima de zero = superávit). Somados com sinal, dão o déficit nominal.</p>
+      </figure>
+      <figure class="grafico">
+        <figcaption><strong>Câmbio</strong> · R$ por US$, fim de período</figcaption>
+        <div id="g-dados-cambio" class="plot" role="img" aria-label="Taxa de câmbio real por dólar"></div>
+        <p class="nota">O canal que os críticos apontam: um corte sem credibilidade sairia primeiro no câmbio.</p>
+      </figure>
+      <figure class="grafico">
+        <figcaption><strong>Quem paga o quê: a dívida bruta por indexador</strong> · % do total</figcaption>
+        <div id="g-dados-composicao" class="plot plot--baixo" role="img" aria-label="Composição da dívida bruta por indexador"></div>
+        <p class="nota" id="nota-composicao"></p>
+      </figure>
+    </div>
+    <p class="fonte" id="fonte-dados"></p>
+    <button type="button" class="botao-contorno" id="bt-csv">Baixar as séries em CSV</button>
+
+    <aside class="aviso">
+      <p class="aviso__rot">O que os dados não dizem</p>
+      <p>Os gráficos mostram que o juro real brasileiro é alto e que a conta de juros pesa mais que o primário. Não mostram
+        <strong>por quê</strong>. Para umas lentes, porque o juro neutro e o risco fiscal exigem um prêmio; para outras, porque o
+        Banco Central o fixa, ou porque é uma convenção que favorece credores. Nenhuma série histórica resolve isso sozinha: é preciso
+        um modelo de como os agentes reagem. As Partes 2 e 3 apresentam as lentes e o laboratório para explorá-las.</p>
+    </aside>
+  </div>
+</section>
+
+<!-- ============================================================ PARTE 2 — LENTES -->
+<section class="bloco bloco--alt" id="lentes">
+  <div class="largura">
+    <header class="bloco__cabeca">
+      <p class="bloco__num">Parte 2 · As lentes</p>
+      <h2>Seis lentes para a mesma pergunta</h2>
+      <p class="bloco__lide">Por que o juro brasileiro é tão alto, e o que aconteceria se caísse? A pergunta é antiga (o FMI chegou a
+        tratá-la como um enigma) e a resposta depende da lente. Do consenso dos bancos centrais à heterodoxia, cada tradição aponta
+        um mecanismo diferente. Abaixo, cada uma em sua melhor versão, com o que a evidência brasileira diz sobre ela.</p>
+    </header>
+
+    <div class="espectro" aria-hidden="true">
+      <div class="espectro__barra"></div>
+      <div class="espectro__zonas"><span>Consenso</span><span>Fronteira</span><span>Heterodoxia</span></div>
+    </div>
+
+    <ul class="status-legenda">
+      <li><span class="status" data-status="forte">Evidência forte</span> resultados consistentes em vários estudos e episódios brasileiros</li>
+      <li><span class="status" data-status="mista">Evidência mista</span> apoio parcial, ou só em certas condições</li>
+      <li><span class="status" data-status="aberta">Em aberto</span> sem teste convincente no Brasil, ou com evidência contrária</li>
+    </ul>
+
+    <div class="lentes">
+      <article class="lente" id="lente-1" style="--cor-lente: var(--l1)">
+        <header><span class="lente__n">1</span><div><h3>Novo-keynesiana e regime de metas</h3>
+          <p class="lente__tese">“O juro é alto porque o juro neutro é alto. O Banco Central só o acompanha.”</p></div></header>
+        <dl>
+          <dt>Diagnóstico</dt><dd>Poupança baixa, risco e histórico inflacionário elevam o juro real de equilíbrio. O BC fixa a Selic acima dele quando a inflação ou as expectativas se afastam da meta.</dd>
+          <dt>Mecanismo</dt><dd>Regra de Taylor: o juro reage mais que um para um à inflação. Atua pela demanda, pelo crédito, pelo câmbio e pelas expectativas.</dd>
+          <dt>Proposta</dt><dd>Manter metas e autonomia do BC. O juro cai de forma duradoura quando o neutro cair, com reformas e fiscal.</dd>
+          <dt>Referências</dt><dd>Taylor (1993); Woodford (2003); Galí (2015); relatórios de política monetária do BCB.</dd>
+          <dt>Evidência no Brasil</dt><dd><span class="status" data-status="forte">Forte na direção</span> Ciclos de aperto foram seguidos de desinflação (2003, 2016–17, 2022–23), e as expectativas reagem às decisões do Copom (Gonçalves, 2017). A <em>magnitude</em> do efeito sobre a atividade segue em debate.</dd>
+        </dl>
+        <p class="lente__lab">No laboratório: Bloco 2 com k &gt; 1; Bloco 3, dominância monetária.</p>
+      </article>
+
+      <article class="lente" id="lente-2" style="--cor-lente: var(--l2)">
+        <header><span class="lente__n">2</span><div><h3>Fiscal e prêmio de risco</h3>
+          <p class="lente__tese">“O juro é alto porque o mercado duvida da trajetória da dívida.”</p></div></header>
+        <dl>
+          <dt>Diagnóstico</dt><dd>A incerteza fiscal eleva o prêmio exigido para financiar o governo e, com ele, o neutro. No limite, há dominância fiscal: subir juros deprecia o câmbio e eleva a inflação.</dd>
+          <dt>Mecanismo</dt><dd>Prêmio de risco na rolagem, câmbio, juros longos e expectativas de inflação.</dd>
+          <dt>Proposta</dt><dd>Uma âncora fiscal crível, com regra e superávits, como pré-condição para um juro menor.</dd>
+          <dt>Referências</dt><dd>Sargent e Wallace (1981); Blanchard (2004); Favero e Giavazzi (2004).</dd>
+          <dt>Evidência no Brasil</dt><dd><span class="status" data-status="forte">Forte para o prêmio</span><span class="status" data-status="mista">mista para a dominância</span> Juros longos e câmbio sobem em episódios de estresse fiscal (2002, 2015). Dominância fiscal plena aparece em crises, não nos dados recentes de alta frequência (Gonçalves, 2017).</dd>
+        </dl>
+        <p class="lente__lab">No laboratório: Bloco 1 com reação de mercado (γ); Bloco 3, antecipação.</p>
+      </article>
+
+      <article class="lente" id="lente-3" style="--cor-lente: var(--l3)">
+        <header><span class="lente__n">3</span><div><h3>Institucional e microestrutural</h3>
+          <p class="lente__tese">“O juro é alto porque metade do sistema não responde a ele.”</p></div></header>
+        <dl>
+          <dt>Diagnóstico</dt><dd>Crédito direcionado e subsidiado (a “meia-entrada”), dívida em LFT, que não perde valor quando o juro sobe, compromissadas, poupança baixa e insegurança jurídica reduzem a potência da Selic.</dd>
+          <dt>Mecanismo</dt><dd>Segmentação: com menos canais ativos, a Selic precisa subir mais para obter o mesmo efeito sobre a inflação.</dd>
+          <dt>Proposta</dt><dd>Reformas: TLP no lugar da TJLP (2017), menos crédito subsidiado, alongamento da dívida, segurança jurídica e mais poupança.</dd>
+          <dt>Referências</dt><dd>Arida, Bacha e Lara Resende (2005); Segura-Ubiergo (2012, FMI); Bonomo e Martins (2016, BCB).</dd>
+          <dt>Evidência no Brasil</dt><dd><span class="status" data-status="mista">Mista</span> Há evidência de transmissão mais fraca no crédito direcionado. A hipótese da incerteza jurisdicional é plausível, mas difícil de testar.</dd>
+        </dl>
+        <p class="lente__lab">No laboratório: em breve, um experimento sobre a potência da Selic.</p>
+      </article>
+
+      <article class="lente" id="lente-4" style="--cor-lente: var(--l4)">
+        <header><span class="lente__n">4</span><div><h3>Teoria fiscal e neofisheriana</h3>
+          <p class="lente__tese">“Com a dívida atrelada à Selic, o juro alto alimenta a dívida, e pode alimentar a inflação.”</p></div></header>
+        <dl>
+          <dt>Diagnóstico</dt><dd>O que ancora os preços é o lastro fiscal. Com a dívida em LFT, subir juros aumenta a dívida sem o efeito riqueza que freia a demanda. No longo prazo, juro alto pode sustentar inflação alta (equação de Fisher).</dd>
+          <dt>Mecanismo</dt><dd>Valor presente dos superávits; equação de Fisher; regra de política com k &lt; 1.</dd>
+          <dt>Proposta</dt><dd>Corte de juros anunciado e coordenado com a política fiscal.</dd>
+          <dt>Referências</dt><dd>Sims (1994); Woodford (1995); Loyo (1999); Cochrane (2023); Lara Resende (2017, 2026).</dd>
+          <dt>Evidência no Brasil</dt><dd><span class="status" data-status="aberta">Em aberto</span> Não há teste direto convincente. O resultado neofisheriano depende do critério de equilíbrio e some com aprendizado (García-Schmidt e Woodford, 2019); dados de alta frequência apontam na direção contrária.</dd>
+        </dl>
+        <p class="lente__lab">No laboratório: Bloco 2 com k &lt; 1; Bloco 3, dominância fiscal com LFT.</p>
+      </article>
+
+      <article class="lente" id="lente-5" style="--cor-lente: var(--l5)">
+        <header><span class="lente__n">5</span><div><h3>Pós-keynesiana e novo-desenvolvimentista</h3>
+          <p class="lente__tese">“O juro é alto por convenção e por escolha, e o preço é um câmbio que desindustrializa.”</p></div></header>
+        <dl>
+          <dt>Diagnóstico</dt><dd>O juro é um fenômeno convencional, sustentado por interesses (rentismo, <i>carry trade</i>) e pelo uso do juro como âncora cambial. Parte da inflação brasileira vem de custos e do conflito distributivo, pouco sensíveis à demanda.</dd>
+          <dt>Mecanismo</dt><dd>Câmbio apreciado, distribuição de renda e custo do capital para quem produz.</dd>
+          <dt>Proposta</dt><dd>Coordenar juro e câmbio, flexibilizar o regime de metas (duplo mandato), usar controles de capital e política de rendas.</dd>
+          <dt>Referências</dt><dd>Keynes (1936); Bresser-Pereira e Nakano (2002); Oreiro; Modenesi.</dd>
+          <dt>Evidência no Brasil</dt><dd><span class="status" data-status="mista">Mista</span> O câmbio é de fato um canal central da transmissão no Brasil, o que é coerente com a lente. A tese da convenção e dos interesses é difícil de testar.</dd>
+        </dl>
+        <p class="lente__lab">No laboratório: em breve, o canal cambial e o distributivo.</p>
+      </article>
+
+      <article class="lente" id="lente-6" style="--cor-lente: var(--l6)">
+        <header><span class="lente__n">6</span><div><h3>Finanças funcionais e MMT</h3>
+          <p class="lente__tese">“Quem emite a própria moeda escolhe o juro. O juro é gasto público.”</p></div></header>
+        <dl>
+          <dt>Diagnóstico</dt><dd>O juro é uma variável de política, não de mercado. Pagar juros é transferir renda aos credores, o que sustenta a demanda deles e pode até ser inflacionário.</dd>
+          <dt>Mecanismo</dt><dd>Canal de renda dos juros. Em moeda própria, não há risco operacional de calote.</dd>
+          <dt>Proposta</dt><dd>Juro baixo (ou zero) permanente. A demanda é regulada por impostos e gastos.</dd>
+          <dt>Referências</dt><dd>Lerner (1943); Mosler; Wray; Kelton (2020); Lara Resende (2020).</dd>
+          <dt>Evidência no Brasil</dt><dd><span class="status" data-status="aberta">Em aberto</span> O canal de renda é mensurável (quem detém a dívida e quanto consome dessa renda), mas ainda não foi estimado de forma sistemática para o Brasil.</dd>
+        </dl>
+        <p class="lente__lab">No laboratório: em breve, o canal de renda dos juros.</p>
+      </article>
+    </div>
+
+    <aside class="aviso aviso--neutro">
+      <p class="aviso__rot">Uma lente transversal: inércia e indexação</p>
+      <p>A tradição da inflação inercial (Lopes; Arida e Lara Resende, 1984; Bresser-Pereira e Nakano, 1984), base do Plano Real,
+        atravessa várias dessas lentes. Contratos indexados e preços administrados fazem parte da inflação responder ao passado,
+        não à demanda, o que reduz a potência dos juros. Ela reforça a lente 3 e dialoga com a 5.</p>
+    </aside>
+  </div>
+</section>
+
+<!-- ============================================================ PARTE 3 — LABORATÓRIO -->
+<section class="parte" id="laboratorio">
+  <div class="largura">
+    <p class="bloco__num">Parte 3 · O laboratório</p>
+    <h2>Por que as lentes divergem</h2>
+    <p>Três experimentos, do mais simples ao mais completo. Em cada um, você controla uma hipótese que separa as lentes e vê, em tempo
+      real, o que ela implica. As lentes 3, 5 e 6 ganham experimentos próprios na próxima etapa: a potência da Selic e o canal de renda
+      dos juros. Para começar do Brasil de hoje, use o botão “Levar estes números ao laboratório” da Parte 1.</p>
   </div>
 </section>
 
@@ -65,6 +314,7 @@
     <header class="bloco__cabeca">
       <p class="bloco__num">Bloco 1</p>
       <h2>O laboratório da dívida</h2>
+      <p class="tags-lente"><a class="chip" href="#lente-4" style="--cor-lente: var(--l4)"><b>4</b>Mundo mecânico: a aritmética das lentes 4 e 6</a><a class="chip" href="#lente-2" style="--cor-lente: var(--l2)"><b>2</b>Reação de mercado: lente fiscal</a></p>
       <p class="bloco__lide">
         Toda a discussão parte da identidade
         $$\Delta d_t = \frac{r_t - \theta_t}{1+\theta_t}\,d_{t-1} - pb_t$$
@@ -76,9 +326,14 @@
 
     <div class="painel">
       <div class="controles" id="controles-divida">
+        <div class="presets" role="group" aria-label="Cenários pré-configurados">
+          <p class="presets__rot">Cenários</p>
+          <button type="button" data-preset="status" aria-pressed="true">Status quo <small>BCB, set/2026</small></button>
+          <button type="button" data-preset="proposta" aria-pressed="false">Proposta Lara Resende <small>2026</small></button>
+        </div>
         <div class="controle">
-          <label for="sl-selic">Selic média 2027–2036 <output id="out-selic"></output></label>
-          <input type="range" id="sl-selic" min="2" max="20" step="0.25" value="15">
+          <label for="sl-selic">Selic 2027–2036 <output id="out-selic"></output></label>
+          <input type="range" id="sl-selic" min="2" max="20" step="0.25" value="14.5">
         </div>
         <div class="controle">
           <label for="sl-theta">Crescimento do PIB nominal <output id="out-theta"></output></label>
@@ -90,7 +345,7 @@
         </div>
         <div class="controle">
           <label for="sl-phi">Dívida indexada à Selic <output id="out-phi"></output></label>
-          <input type="range" id="sl-phi" min="20" max="90" step="0.5" value="56.9">
+          <input type="range" id="sl-phi" min="20" max="90" step="0.1" value="56.9">
         </div>
 
         <div class="chave">
@@ -99,13 +354,14 @@
             Ativar reação de mercado <small>(prêmio de risco &amp; câmbio)</small>
           </button>
         </div>
-        <div class="controle controle--reacao" id="ctl-kappa" hidden>
-          <label for="sl-kappa"><span>Sensibilidade do prêmio, κ</span> <output id="out-kappa"></output></label>
-          <input type="range" id="sl-kappa" min="0" max="2" step="0.05" value="1">
+        <div class="controle controle--reacao" id="ctl-gamma" hidden>
+          <label for="sl-gamma"><span>Sensibilidade do prêmio, γ</span> <output id="out-gamma"></output></label>
+          <input type="range" id="sl-gamma" min="0" max="2" step="0.05" value="1">
           <p class="nota">Pontos de prêmio exigidos na rolagem por ponto de Selic abaixo do neutro nominal
-            (juro real neutro de 5% + inflação esperada). κ é o parâmetro que a Onda 2 vai estimar.</p>
+            (juro real neutro de 5% + inflação esperada). γ é o parâmetro que a Onda 2 vai estimar.</p>
         </div>
-        <button type="button" class="link-botao" id="bt-reset-divida">Restaurar calibração-base</button>
+        <button type="button" class="botao-contorno" id="bt-compartilhar">Copiar link deste cenário</button>
+        <p class="nota" id="status-compartilhar" role="status"></p>
       </div>
 
       <div class="resultados">
@@ -118,6 +374,7 @@
         <figure class="grafico">
           <figcaption><strong>Dívida bruta do governo geral</strong> · % do PIB</figcaption>
           <div id="g-divida" class="plot plot--alto" role="img" aria-label="Trajetória da dívida bruta em proporção do PIB, 2026 a 2036"></div>
+          <p class="leitura" id="leitura-divida"></p>
         </figure>
         <figure class="grafico">
           <figcaption><strong>Onde o corte deixa de ajudar</strong> · dívida em 2036 para cada Selic, % do PIB</figcaption>
@@ -131,17 +388,23 @@
       <summary>Como o simulador calcula (camada técnica)</summary>
       <div class="metodo__corpo">
         <p><strong>Composição.</strong> Custo implícito
-          \(r_t = \phi\,selic_t + (1-\phi)\,c_t + p_t + \psi(\pi_t-\pi_0)\), em que \(\phi\) é a fatia indexada à Selic,
-          \(c_t\) o custo da parcela não-Selic (reprecifica 20% ao ano em direção à Selic), \(p_t\) o prêmio de risco do estoque e
-          \(\psi = 19{,}9\%\) a fatia atrelada ao IPCA.</p>
+          \(r_t = \phi\,selic_t + (1-\phi)\,\bar c_t + p_t + \psi(\pi_t-\pi_0)\), em que \(\phi\) é a fatia indexada à Selic,
+          \(p_t\) o prêmio de risco do estoque e \(\psi = 19{,}9\%\) a fatia atrelada ao IPCA.</p>
+        <p><strong>Repasse gradual.</strong> A parcela Selic reprecifica na hora. A parcela não-Selic reprecifica pela rolagem,
+          \(c_t = (1-\lambda)\,c_{t-1} + \lambda\,selic_t\), com \(\lambda = 26{,}8\%\) ao ano. Como a dívida vence ao longo do ano, a taxa nova
+          vale em média meio ano: \(\bar c_t = (c_{t-1}+c_t)/2\). Assim, 1 p.p. de Selic muda a dívida do primeiro ano em
+          <strong><span id="sens-simulador">–</span> p.p. do PIB</strong> no simulador, contra 0,48 p.p. na sensibilidade publicada pelo BCB.</p>
         <p><strong>Reação de mercado.</strong> Hiato de credibilidade \(g_t=\max(0,\ r^n+\pi^e_t-selic_t)\), com
-          \(r^n=5\%\) e expectativas adaptativas \(\pi^e_t=\pi_{t-1}\). O prêmio novo, \(\kappa g_t\), entra pela fração que vence em 12 meses:
-          \(p_t=(1-m)\,p_{t-1}+m\,\kappa g_t\), \(m=26{,}8\%\). Depreciação \(\Delta e_t = 3\,g_t\), repasse de 10% para a inflação,
+          \(r^n=5\%\) e expectativas adaptativas \(\pi^e_t=\pi_{t-1}\). O prêmio novo, \(\gamma g_t\), entra pela fração que vence em 12 meses:
+          \(p_t=(1-m)\,p_{t-1}+m\,\gamma g_t\), \(m=26{,}8\%\). Depreciação \(\Delta e_t = 3\,g_t\), repasse de 10% para a inflação,
           persistência 0,5; a inflação maior eleva \(\theta_t\) (erosão do estoque) e o custo da parcela em IPCA, e a depreciação
           reavalia os 4,6% de dívida cambial.</p>
         <p><strong>Calibração-base.</strong> BCB, Nota de Estatísticas Fiscais de set/2026: dívida bruta de 82,9% do PIB, juro implícito de 13,0%,
-          56,9% indexada à Selic, 26,8% vencendo em 12 meses. O motor reproduz a conta do dossiê de referência
-          (custo de 12,7%, PIB nominal de 7% e primário zero ⇒ ~138% do PIB em 2036) e a elasticidade do BCB (~0,48 p.p. do PIB por ponto de Selic).</p>
+          56,9% indexada à Selic, 26,8% vencendo em 12 meses; Selic de referência de 14,5% (média da Selic efetiva de out/2025 a set/2026,
+          SGS 4189), que calibra o custo da parcela não-Selic. O motor reproduz a conta do dossiê de referência (custo de 12,7%, PIB nominal
+          de 7% e primário zero ⇒ ~138% do PIB em 2036).</p>
+        <p><strong>Notação.</strong> γ é a sensibilidade do prêmio de risco (Bloco 1); <i>k</i>, a reação do juro à inflação na regra de
+          Taylor (Bloco 2); κ, a inclinação da curva de Phillips (Bloco 3).</p>
         <p class="conferencia" id="conferencia"></p>
       </div>
     </details>
@@ -154,6 +417,7 @@
     <header class="bloco__cabeca">
       <p class="bloco__num">Bloco 2</p>
       <h2>O interruptor de Taylor</h2>
+      <p class="tags-lente"><a class="chip" href="#lente-1" style="--cor-lente: var(--l1)"><b>1</b>k &gt; 1: novo-keynesiana</a><a class="chip" href="#lente-4" style="--cor-lente: var(--l4)"><b>4</b>k &lt; 1: neofisheriana</a></p>
       <p class="bloco__lide">
         A equação de Fisher, \(i = r + \pi^e\), é comum às duas escolas. O que as separa é a regra de política.
         Com \(i = k\pi + z\), em que \(z\) é a postura do Banco Central, o equilíbrio de longo prazo é
@@ -196,6 +460,7 @@
     <header class="bloco__cabeca">
       <p class="bloco__num">Bloco 3</p>
       <h2>Regimes: monetário × fiscal</h2>
+      <p class="tags-lente"><a class="chip" href="#lente-1" style="--cor-lente: var(--l1)"><b>1</b>Dominância monetária: lentes 1 e 2</a><a class="chip" href="#lente-4" style="--cor-lente: var(--l4)"><b>4</b>Dominância fiscal: TFNP</a></p>
       <p class="bloco__lide">
         Pela teoria fiscal do nível de preços, o valor real da dívida tem de igualar o valor presente dos superávits:
         $$\frac{B_{t-1}}{P_t} = E_t\sum_{j=0}^{\infty}\beta^j s_{t+j}$$
@@ -210,6 +475,12 @@
       <button role="tab" aria-selected="false" data-cenario="antecipacao">Efeito Antecipação</button>
     </div>
     <p class="cenario__desc" id="desc-cenario"></p>
+    <p class="choque" id="choque-regimes">
+      <strong>Choque:</strong> corte exógeno de <strong>100 pontos-base</strong> (−1 p.p. a.a.) no termo autônomo da regra de juros,
+      com persistência ρ = 0,75, em t = 0 (no cenário de antecipação, anunciado em t = 0 e efetivo em t = 4).
+      <strong>Eixos:</strong> desvio em relação ao estado estacionário, em pontos percentuais; câmbio em % e dívida em pontos do PIB.
+      Eixo horizontal em trimestres.
+    </p>
     <ul class="legenda" id="legenda-regimes"></ul>
     <div class="multiplos" id="g-regimes"></div>
     <p class="leitura" id="leitura-regimes"></p>
@@ -233,57 +504,200 @@
   </div>
 </section>
 
-<!-- ============================================================ BLOCO 4 -->
+<!-- ============================================================ PARTE 4 — MAPA -->
 <section class="bloco bloco--alt" id="mapa">
   <div class="largura">
     <header class="bloco__cabeca">
-      <p class="bloco__num">Bloco 4</p>
-      <h2>O mapa do debate</h2>
-      <p class="bloco__lide">O que a proposta afirma, o que os críticos respondem e o que o laboratório permite testar.</p>
+      <p class="bloco__num">Parte 4 · O mapa do debate</p>
+      <h2>Onde as lentes concordam, e onde divergem</h2>
+      <p class="bloco__lide">Sete afirmações que dividem os economistas, com a posição típica de cada tradição, do consenso à heterodoxia.
+        A última coluna diz como o laboratório ou os dados podem arbitrar.</p>
     </header>
 
+    <ul class="posicao-legenda">
+      <li><span class="pos" data-pos="sim">●</span> concorda</li>
+      <li><span class="pos" data-pos="parte">◐</span> em parte, ou sob condições</li>
+      <li><span class="pos" data-pos="nao">○</span> discorda</li>
+      <li><span class="pos" data-pos="na">–</span> não é central para a lente</li>
+    </ul>
+
     <div class="tabela-rolagem">
-      <table class="tabela">
+      <table class="tabela tabela--mapa">
         <thead>
-          <tr><th scope="col">A proposta afirma</th><th scope="col">O contra-argumento</th><th scope="col">O que o laboratório mostra</th></tr>
+          <tr>
+            <th scope="col">Afirmação</th>
+            <th scope="col" class="col-lente" style="--cor-lente: var(--l1)"><a href="#lente-1">1</a><span>Novo-keynesiana</span></th>
+            <th scope="col" class="col-lente" style="--cor-lente: var(--l2)"><a href="#lente-2">2</a><span>Fiscal</span></th>
+            <th scope="col" class="col-lente" style="--cor-lente: var(--l3)"><a href="#lente-3">3</a><span>Institucional</span></th>
+            <th scope="col" class="col-lente" style="--cor-lente: var(--l4)"><a href="#lente-4">4</a><span>TFNP</span></th>
+            <th scope="col" class="col-lente" style="--cor-lente: var(--l5)"><a href="#lente-5">5</a><span>Pós-keynesiana</span></th>
+            <th scope="col" class="col-lente" style="--cor-lente: var(--l6)"><a href="#lente-6">6</a><span>MMT</span></th>
+            <th scope="col">Como arbitrar</th>
+          </tr>
         </thead>
         <tbody>
           <tr>
-            <td>O juro é o “único motor” da dívida.</td>
-            <td>Na última década o juro real domina a conta da dívida bruta; na série longa da dívida líquida, é o primário que separa a queda até 2013 da alta desde 2014.</td>
-            <td><a href="#divida">Bloco 1</a>: sem reação, o corte sempre reduz a dívida. Com reação e κ &gt; 1, cortar abaixo do neutro nominal passa a elevá-la.</td>
+            <th scope="row">A Selic controla a inflação pela demanda e pelas expectativas.</th>
+            <td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="parte" title="em parte"><span class="oculto">em parte</span></td><td data-pos="parte" title="em parte"><span class="oculto">em parte</span></td><td data-pos="parte" title="em parte"><span class="oculto">em parte</span></td><td data-pos="nao" title="discorda"><span class="oculto">discorda</span></td>
+            <td><a href="#taylor">Bloco 2</a>. <span class="selo">Dados</span> curva de Phillips e estudo de eventos do Copom.</td>
           </tr>
           <tr>
-            <td>No longo prazo, juro alto causa inflação alta.</td>
-            <td>Só com uma regra que viole o princípio de Taylor e um critério de equilíbrio não convencional; com aprendizado, o resultado some (García-Schmidt e Woodford).</td>
-            <td><a href="#taylor">Bloco 2</a>: com k &lt; 1 e expectativas racionais, sim. Com aprendizado adaptativo, o mesmo equilíbrio é instável.</td>
+            <th scope="row">O juro neutro brasileiro é alto por fundamentos (poupança, risco, instituições).</th>
+            <td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="parte" title="em parte"><span class="oculto">em parte</span></td><td data-pos="nao" title="discorda"><span class="oculto">discorda</span></td><td data-pos="nao" title="discorda"><span class="oculto">discorda</span></td>
+            <td><span class="selo">Dados</span> estimativas do juro neutro pela curva de juros e por modelos semiestruturais.</td>
           </tr>
           <tr>
-            <td>Com dívida em LFT, cortar juros não gera inflação.</td>
-            <td>Supõe que os investidores continuem a financiar o governo a juros menores; se o corte for lido como perda de lastro, a própria teoria fiscal prevê inflação.</td>
-            <td><a href="#regimes">Bloco 3</a>: na dominância fiscal com LFT, o corte reduz a inflação, mas, com perda de lastro, ela sobe com força.</td>
+            <th scope="row">O risco fiscal eleva o prêmio de risco e, com ele, o juro.</th>
+            <td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="parte" title="em parte"><span class="oculto">em parte</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="parte" title="em parte"><span class="oculto">em parte</span></td><td data-pos="nao" title="discorda"><span class="oculto">discorda</span></td>
+            <td><a href="#divida">Bloco 1</a> (γ). <span class="selo">Dados</span> reação de DI, câmbio e risco-país a notícias fiscais.</td>
           </tr>
           <tr>
-            <td>A curva de Phillips é horizontal.</td>
-            <td>A pandemia mostrou atividade aquecida com inflação alta; nos ciclos da Selic e em dados de alta frequência, a alta de juros reduz a inflação esperada.</td>
-            <td><span class="selo">Onda 2</span> Estimação com dados do BCB e do Focus (curva de Phillips e estudo de eventos do Copom).</td>
+            <th scope="row">Juro alto piora a dívida e pode alimentar a própria inflação.</th>
+            <td data-pos="nao" title="discorda"><span class="oculto">discorda</span></td><td data-pos="parte" title="em parte"><span class="oculto">em parte</span></td><td data-pos="na" title="não é central"><span class="oculto">não é central</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td>
+            <td><a href="#regimes">Bloco 3</a> (dominância fiscal, LFT) e <a href="#taylor">Bloco 2</a> (k &lt; 1).</td>
           </tr>
           <tr>
-            <td>As reservas bastam para conter o câmbio.</td>
-            <td>São o último colchão do país; a China gastou cerca de US$ 1 trilhão em 2015.</td>
-            <td><a href="#regimes">Bloco 3</a>, antecipação: o câmbio se move no anúncio. <span class="selo">Onda 2</span> mede a reação do câmbio e do CDS nas janelas do Copom.</td>
+            <th scope="row">Crédito direcionado e indexação reduzem a potência da Selic.</th>
+            <td data-pos="parte" title="em parte"><span class="oculto">em parte</span></td><td data-pos="na" title="não é central"><span class="oculto">não é central</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="na" title="não é central"><span class="oculto">não é central</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="na" title="não é central"><span class="oculto">não é central</span></td>
+            <td><span class="selo">Em breve</span> potência da Selic no laboratório. <span class="selo">Dados</span> transmissão por segmento de crédito.</td>
           </tr>
           <tr>
-            <td>O conselho fiscal-monetário é coordenação.</td>
-            <td>Subordina a política monetária à necessidade fiscal; países com passado de monetização precisam de bancos centrais mais agressivos (Jácome et al., 2026).</td>
-            <td><a href="#regimes">Bloco 3</a>: é a passagem do regime monetário para o fiscal, em que o nível de preços vira a variável de ajuste.</td>
+            <th scope="row">Os juros pagos redistribuem renda e sustentam a demanda de quem os recebe.</th>
+            <td data-pos="na" title="não é central"><span class="oculto">não é central</span></td><td data-pos="na" title="não é central"><span class="oculto">não é central</span></td><td data-pos="na" title="não é central"><span class="oculto">não é central</span></td><td data-pos="parte" title="em parte"><span class="oculto">em parte</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td>
+            <td><span class="selo">Em breve</span> canal de renda dos juros. <span class="selo">Dados</span> quem detém a dívida pública.</td>
+          </tr>
+          <tr>
+            <th scope="row">Um corte anunciado e coordenado pode baixar o juro sem custo inflacionário relevante.</th>
+            <td data-pos="nao" title="discorda"><span class="oculto">discorda</span></td><td data-pos="nao" title="discorda"><span class="oculto">discorda</span></td><td data-pos="parte" title="em parte"><span class="oculto">em parte</span></td><td data-pos="parte" title="em parte"><span class="oculto">em parte</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td>
+            <td><a href="#regimes">Bloco 3</a> (antecipação) e <a href="#divida">Bloco 1</a> (reação de mercado).</td>
           </tr>
         </tbody>
       </table>
     </div>
-    <p class="fonte">Teses e contra-argumentos organizados a partir de Wilher, V. (2026), <i>O debate dos juros</i>, Análise Macro,
-      que reúne o artigo de Lara Resende (25/09/2026) e o debate de 2017 no <i>Valor Econômico</i> (Lara Resende, Lisboa e Pessoa,
-      Schwartsman, Loyo, Senna, Lopes, Barbosa) e Gonçalves (2017).</p>
+    <p class="fonte">Leitura editorial das posições típicas de cada tradição. Autores individuais variam, e várias posições dependem de
+      condições (regime cambial, nível da dívida, credibilidade). Sugestões e correções são bem-vindas.</p>
+  </div>
+</section>
+
+<!-- ============================================================ PARTE 5 — EPISÓDIO 2026 -->
+<section class="bloco" id="episodio">
+  <div class="largura">
+    <header class="bloco__cabeca">
+      <p class="bloco__num">Parte 5 · Estudo de caso</p>
+      <h2>O episódio de 2026: a proposta de Lara Resende</h2>
+      <p class="bloco__lide">Em 25 de setembro de 2026, André Lara Resende publicou “Eu acuso: uma proposta para eliminar os juros
+        absurdos”. O texto propõe um conselho fiscal-monetário com metas para a Selic, uma banda entre a meta de inflação (3%) e o
+        crescimento nominal potencial (5,5%), uma transição de cerca de 12 meses até perto de 7,5% e o uso das reservas contra a
+        saída de capital. A proposta mobiliza sobretudo a <a href="#lente-4">lente 4</a>, com elementos das
+        <a href="#lente-5">lentes 5</a> e <a href="#lente-6">6</a>. As críticas vêm principalmente das
+        <a href="#lente-1">lentes 1</a> e <a href="#lente-2">2</a>.</p>
+    </header>
+
+    <div class="tabela-rolagem">
+      <table class="tabela tabela--caso">
+        <thead>
+          <tr>
+            <th scope="col">Tese da proposta (2026)</th>
+            <th scope="col">Crítica teórica e empírica (<a href="#lente-1">lentes 1</a> e <a href="#lente-2">2</a>)</th>
+            <th scope="col">O que o laboratório demonstra</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>O juro é o único motor da dinâmica da dívida.</strong></td>
+            <td>A contabilidade da dívida bruta na última década é dominada pelo juro real, mas a identidade não identifica causalidade. Na série longa da dívida líquida, a reversão de superávits (até 2013) para déficits primários (após 2014) explica a mudança de trajetória.</td>
+            <td><a href="#divida"><strong>Bloco 1</strong></a>: sem reação de mercado, cortar juros sempre reduz a dívida. Com reação endógena (\(\gamma > 1\)), cortar abaixo do neutro eleva o prêmio na rolagem e reverte o ganho fiscal.</td>
+          </tr>
+          <tr>
+            <td><strong>No longo prazo, juro alto sustenta inflação alta (efeito neofisheriano).</strong></td>
+            <td>Como mostrou Loyo (2017), a equação de Fisher não implica esse sinal sob uma regra ativa (\(k > 1\)). O resultado neofisheriano depende de violar o princípio de Taylor (\(k < 1\)) e desaparece quando se abandonam as expectativas racionais perfeitas, como no equilíbrio reflexivo de García-Schmidt e Woodford (2019).</td>
+            <td><a href="#taylor"><strong>Bloco 2</strong></a>: com \(k < 1\) e expectativas racionais, um corte reduz a inflação de longo prazo. Sob aprendizado adaptativo, o mesmo equilíbrio torna-se instável.</td>
+          </tr>
+          <tr>
+            <td><strong>Com dívida majoritariamente em LFT, cortar a Selic não gera inflação.</strong></td>
+            <td>Na TFNP (Cochrane) e na observação de Francisco Lopes (2017), o mecanismo da LFT só evita o salto de preços se o lastro fiscal esperado não cair e os investidores continuarem financiando o Tesouro. Se o corte sinalizar deterioração fiscal, a própria TFNP prevê inflação.</td>
+            <td><a href="#regimes"><strong>Bloco 3</strong></a>: sob TFNP com LFT e <strong>lastro preservado</strong>, o corte reduz a inflação. Se houver perda de lastro (queda dos superávits esperados), o nível de preços salta com força.</td>
+          </tr>
+          <tr>
+            <td><strong>A curva de Phillips é praticamente horizontal.</strong></td>
+            <td>Mesmo com inclinação moderada sobre o hiato do produto, a política monetária no Brasil opera com força pelos canais de expectativas e câmbio, como mostram os ciclos da Selic e os dados de alta frequência nas janelas do Copom (Gonçalves, 2017).</td>
+            <td><a href="#proximo"><span class="selo">Onda 2</span></a> Estimação da curva de Phillips brasileira e estudo de eventos nas decisões do Copom com dados do BCB e do Focus.</td>
+          </tr>
+          <tr>
+            <td><strong>Reservas internacionais bastam para absorver a saída de capital.</strong></td>
+            <td>Os modelos de Cochrane são de economia fechada, sem canal cambial. Em economias emergentes, intervenções cambiais contra desequilíbrios percebidos consomem reservas rapidamente (como ocorreu na China em 2015) e fragilizam o último colchão externo.</td>
+            <td><a href="#regimes"><strong>Bloco 3 (antecipação)</strong></a>: sob expectativas racionais, o câmbio salta no anúncio, antes do corte efetivo. <a href="#proximo"><span class="selo">Onda 2</span></a> Medição da reação do câmbio e do CDS nas janelas do Copom.</td>
+          </tr>
+          <tr>
+            <td><strong>O QE pós-2008 provou que expandir reservas com juro baixo não gera inflação.</strong></td>
+            <td>Como argumentou Senna (2017), o QE ocorreu em economias desenvolvidas sob recessão de balanço, demanda elevada por moeda segura e juro real neutro perto de zero, um contexto estruturalmente oposto ao brasileiro.</td>
+            <td><a href="#lente-1"><strong>Contexto institucional</strong></a>: o parâmetro \(r\) (juro neutro) e o risco-país impedem transpor diretamente o equilíbrio de juro zero para o Brasil.</td>
+          </tr>
+          <tr>
+            <td><strong>Um Conselho Fiscal-Monetário promove coordenação, não dominância fiscal.</strong></td>
+            <td>Fixar bandas para a Selic por critério fiscal subordina a âncora monetária ao financiamento da dívida. Evidências recentes (Jácome et al., 2026) indicam que economias com histórico inflacionário exigem regras monetárias mais firmes, não mais frouxas.</td>
+            <td><a href="#regimes"><strong>Bloco 3</strong></a>: simula a transição do regime de dominância monetária para o fiscal (TFNP), no qual o nível de preços passa a ser a variável de ajuste da solvência.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fonte">Tabela autoral. Teses de Lara Resende (2026, “Eu acuso”). Críticas e evidências: Loyo (2017), Senna (2017) e Lopes (2017),
+      no debate do <i>Valor Econômico</i>; Gonçalves (2017); García-Schmidt e Woodford (2019, <i>AER</i>); Cochrane (2023);
+      Jácome, Magud, Pienknagura e Uribe (2026). A organização inicial do debate de 2017 e de 2026 segue Wilher (2026), <i>O debate dos juros</i>, Análise Macro.</p>
+  </div>
+</section>
+
+<!-- ============================================================ SÍNTESE -->
+<section class="bloco" id="sintese">
+  <div class="largura">
+    <header class="bloco__cabeca">
+      <h2>Síntese e Perspectivas</h2>
+    </header>
+    <div class="texto-corrido">
+      <p><strong>O que os dados estabelecem.</strong> O juro real brasileiro é alto para padrões internacionais, e a conta de juros
+        pesa mais do que o resultado primário na dinâmica recente da dívida bruta. Na última década, o juro real respondeu, sozinho, por
+        mais pontos do PIB do que a própria alta da dívida. Esses fatos são aceitos por todas as lentes.</p>
+      <p><strong>Onde está a divergência.</strong> A disputa não é sobre a aritmética, mas sobre causalidade: o juro é alto porque o
+        juro neutro e o risco fiscal o exigem, porque metade do sistema não responde à Selic, ou porque o Banco Central o fixa por
+        convenção? Cada resposta implica uma política diferente, do ajuste fiscal prévio ao corte anunciado e coordenado.</p>
+      <p><strong>O que o laboratório mostra.</strong> Três parâmetros decidem o resultado: a sensibilidade do prêmio de risco ao
+        corte (γ, Bloco 1), a força da reação do juro à inflação (<i>k</i>, Bloco 2) e o regime que ancora os preços, monetário ou
+        fiscal (Bloco 3). Com γ baixo, <i>k</i> abaixo de 1 e lastro fiscal preservado, a proposta funciona no papel; com γ alto ou
+        perda de lastro, o mesmo corte eleva a dívida e a inflação.</p>
+      <p><strong>Próximos passos.</strong> Esses parâmetros podem ser estimados. A próxima etapa leva o laboratório aos dados
+        brasileiros (reação do prêmio, do câmbio e das expectativas às decisões do Copom, curva de Phillips, potência da Selic e canal de
+        renda dos juros) para dizer quais lentes a evidência sustenta.</p>
+    </div>
+
+    <h3 class="subtitulo-secao">Dados e método</h3>
+    <div class="tabela-rolagem tabela-rolagem--compacta">
+      <table class="tabela tabela--series">
+        <thead><tr><th scope="col">Série</th><th scope="col">Código</th><th scope="col">Fonte</th></tr></thead>
+        <tbody>
+          <tr><td>Meta Selic definida pelo Copom</td><td>SGS 432</td><td>BCB</td></tr>
+          <tr><td>Selic acumulada no mês, anualizada (base 252)</td><td>SGS 4189</td><td>BCB</td></tr>
+          <tr><td>IPCA em 12 meses</td><td>SGS 13522</td><td>IBGE, via BCB</td></tr>
+          <tr><td>Expectativa de IPCA para 12 meses (mediana, suavizada)</td><td>Focus</td><td>BCB</td></tr>
+          <tr><td>Dívida bruta do governo geral (% do PIB)</td><td>SGS 13762</td><td>BCB</td></tr>
+          <tr><td>Dívida líquida do setor público (% do PIB)</td><td>SGS 4513</td><td>BCB</td></tr>
+          <tr><td>NFSP em 12 meses: resultado primário (% do PIB)</td><td>SGS 5793</td><td>BCB</td></tr>
+          <tr><td>NFSP em 12 meses: juros nominais (% do PIB)</td><td>SGS 5760</td><td>BCB</td></tr>
+          <tr><td>PIB acumulado em 12 meses (valores correntes)</td><td>SGS 4382</td><td>IBGE, via BCB</td></tr>
+          <tr><td>Câmbio livre R$/US$ (fim de período)</td><td>SGS 3696</td><td>BCB</td></tr>
+          <tr><td>Juro implícito, composição e fatores condicionantes da DBGG</td><td>Tabelas da Nota</td><td>BCB, Notas de Estatísticas Fiscais</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fonte">Juro real pela equação de Fisher exata, \((1+i)/(1+\pi)-1\). Dívida simulada pela identidade
+      \(\Delta d_t = \frac{r_t-\theta_t}{1+\theta_t}d_{t-1} - pb_t\); cenários de regime resolvidos pelo método de Klein com checagem de
+      Blanchard–Kahn. Código, dados e testes no <a href="https://github.com/economistacase/debate-juros">repositório do projeto</a>.
+      Os dados do BCB são atualizados automaticamente toda semana.</p>
+  </div>
+</section>
+
+<!-- ============================================================ CAPTAÇÃO (Onda 2) -->
+<section class="bloco bloco--alt" id="proximo">
+  <div class="largura">
 
     <!-- ======================================================== CAPTAÇÃO
          Para ativar: preencha data-endpoint com a URL do seu provedor e ajuste os nomes dos campos.
@@ -291,12 +705,13 @@
          - Kit:       https://app.kit.com/forms/<ID>/subscriptions ; campos email_address, first_name
          - Substack:  troque o <form> pelo <iframe src="https://SEU.substack.com/embed">
          Com data-endpoint vazio, o formulário mostra um aviso e não envia nada. -->
-    <aside class="captacao" id="cadastro">
+    <aside class="captacao captacao--topo" id="cadastro">
       <div class="captacao__texto">
         <p class="sobretitulo">Próximo: Onda 2 · Laboratório Empírico</p>
-        <h2>A teoria mostra que os dois resultados são possíveis. Os dados dizem qual vale para o Brasil.</h2>
+        <h2>As lentes discordam sobre mecanismos que podem ser medidos. A próxima etapa mede.</h2>
         <ul class="beneficios">
-          <li>Dossiê empírico em PDF: SVAR e estudo de eventos do Copom com dados do BCB, do Focus e da curva de juros</li>
+          <li>O laboratório estimado com dados brasileiros: prêmio de risco, curva de Phillips, potência da Selic e canal de renda dos juros</li>
+          <li>Dossiê em PDF com os testes que discriminam entre as seis lentes</li>
           <li>Notebooks em Python para auditar e replicar cada número</li>
           <li>Aviso mensal quando o painel for atualizado com a Nota Fiscal do BCB</li>
         </ul>
@@ -320,10 +735,17 @@
 
 <footer class="rodape">
   <div class="largura">
-    <p><strong>O Debate dos Juros</strong> · Laboratório Teórico (Onda 1). Toda curva desta página é calculada:
-      em tempo real pelo motor em JavaScript ou carregada de cenários gerados e testados em Python.</p>
-    <p><a href="https://github.com/economistacase/debate-juros">Código e testes no GitHub</a> ·
-      <a href="https://economistacase.github.io/">Observatório Macro</a> · Material didático; não é recomendação de investimento.</p>
+    <div class="assinatura">
+      <p><strong>Painel Juros — O Debate dos Juros no Brasil</strong> · Dados até <span id="rodape-ref">–</span></p>
+      <p>Elaborado por Raimundo Casé - economista | <a href="mailto:economistacase@gmail.com">economistacase@gmail.com</a></p>
+      <p>Fontes primárias: BCB — Banco Central do Brasil (SGS: Selic, dívida bruta e líquida, NFSP, PIB, câmbio; boletim Focus;
+        Notas de Estatísticas Fiscais) | IBGE — Instituto Brasileiro de Geografia e Estatística (IPCA, PIB).</p>
+      <p>As análises e opiniões expressas neste painel são de responsabilidade exclusiva do autor e não representam qualquer instituição.</p>
+    </div>
+    <p class="rodape__links"><a href="https://github.com/economistacase/debate-juros">Código e testes no GitHub</a> ·
+      <a href="https://economistacase.github.io/boletim-macro-python/">Boletim Macroeconômico Semanal</a> ·
+      <a href="https://economistacase.github.io/relatorio-ipca/relatorio_ipca.html">Painel IPCA</a> ·
+      Material didático; não é recomendação de investimento.</p>
   </div>
 </footer>
 

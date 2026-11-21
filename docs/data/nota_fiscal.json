@@ -1,0 +1,103 @@
+{
+ "juro_implicito_dbgg": {
+  "valor": 13.0,
+  "data": "2026-09",
+  "fonte": "BCB, Nota de Estatísticas Fiscais (juro implícito da DBGG, 12 meses)"
+ },
+ "composicao_dbgg": {
+  "data": "2026-09",
+  "fonte": "BCB, Nota de Estatísticas Fiscais (Tabelas 21 e 25)",
+  "fatias": {
+   "Selic (inclui compromissadas)": 56.9,
+   "Preços": 19.9,
+   "Prefixada": 17.9,
+   "Câmbio": 4.6
+  },
+  "vence_12m": 26.8
+ },
+ "retrato": {
+  "referencia": "set/2026",
+  "fonte": "BCB, Nota de Estatísticas Fiscais de outubro de 2026 (dados até set/2026)",
+  "itens": [
+   {
+    "id": "dbgg",
+    "rotulo": "Dívida bruta (DBGG)",
+    "valor": 82.9,
+    "unidade": "% do PIB"
+   },
+   {
+    "id": "juro",
+    "rotulo": "Juro implícito, 12 meses",
+    "valor": 13.0,
+    "unidade": "% a.a.",
+    "nota": "PIB nominal: 7,0% em 12 meses"
+   },
+   {
+    "id": "primario",
+    "rotulo": "Primário atual × estabilizador",
+    "valor": -0.5,
+    "valor2": 4.7,
+    "unidade": "% do PIB"
+   },
+   {
+    "id": "selic",
+    "rotulo": "Indexada à Selic (com compromissadas)",
+    "valor": 56.9,
+    "unidade": "% da DBGG",
+    "nota": "vence em 12 meses: 26,8%"
+   },
+   {
+    "id": "sensibilidade",
+    "rotulo": "Sensibilidade à Selic (BCB)",
+    "valor": 0.48,
+    "unidade": "p.p. do PIB",
+    "nota": "em 12 meses, por 1 p.p. de Selic"
+   }
+  ]
+ },
+ "decomposicao_dbgg": {
+  "periodo": "2016–2025",
+  "inicio": {
+   "rotulo": "dez/2015",
+   "valor": 65.5
+  },
+  "fim": {
+   "rotulo": "dez/2025",
+   "valor": 78.6
+  },
+  "fatores": [
+   {
+    "rotulo": "Juro real",
+    "valor": 31.0
+   },
+   {
+    "rotulo": "Crescimento real do PIB",
+    "valor": -13.6
+   },
+   {
+    "rotulo": "Emissões líquidas",
+    "valor": -1.2
+   },
+   {
+    "rotulo": "Câmbio e outros ajustes",
+    "valor": 2.2
+   },
+   {
+    "rotulo": "Revisões do PIB",
+    "valor": -5.2
+   }
+  ],
+  "soma_publicada": 18.3,
+  "variacao_total": 13.1,
+  "memoria": {
+   "juros_nominais": 68.0,
+   "juro_real": 31.0,
+   "erosao_inflacionaria": 36.9
+  },
+  "divida_liquida": {
+   "superavits_2003_2013": -32,
+   "deficits_2014_2025": 19
+  },
+  "fonte": "BCB, Notas de Estatísticas Fiscais (Tabela 19) e IPCA (SGS 433); somas anuais compiladas em Wilher (2026), O debate dos juros, Análise Macro"
+ }
+}

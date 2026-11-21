@@ -1,6 +1,9 @@
-"""Orquestra a Onda 1: gera os cenários teóricos e roda a suíte de testes.
+"""Orquestra o projeto: dados (opcional), cenários teóricos, carimbo de versão, testes e verificação no navegador.
 
-Uso:  python build.py
+Uso:
+    python build.py                    # cenários + carimbo + testes + verificação no Chrome (se disponível)
+    python build.py --dados            # baixa também os dados do BCB/Focus (requer internet)
+    python build.py --sem-navegador    # pula a verificação no Chrome
 """
 import subprocess
 import sys
@@ -13,13 +16,33 @@ sys.path.insert(0, str(RAIZ))
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     from src.teoria import regimes_tfnp
+    from src.dados import nota
+    from src import publicacao
 
-    print("== 1/2  Gerando cenários teóricos")
+    if "--dados" in sys.argv:
+        from src.dados import bcb
+        print("== 0/4  Baixando dados do BCB (SGS + Focus)")
+        destino = bcb.exportar()
+        print(f"   ok: {destino.relative_to(RAIZ)} ({destino.stat().st_size / 1024:.0f} KB)")
+
+    print("== 1/4  Nota Fiscal e cenários teóricos")
+    print(f"   ok: {nota.publicar().relative_to(RAIZ)}")
     destino = regimes_tfnp.exportar()
     print(f"   ok: {destino.relative_to(RAIZ)} ({destino.stat().st_size / 1024:.1f} KB)")
 
-    print("== 2/2  Rodando testes de consistência")
-    return subprocess.call([sys.executable, "-m", "pytest", "-q", "tests"], cwd=RAIZ)
+    print("== 2/4  Carimbo de versão nos CSS/JS (evita cache antigo no navegador)")
+    for arq in publicacao.carimbar():
+        print(f"   ok: {arq}")
+
+    print("== 3/4  Testes de consistência", flush=True)
+    codigo = subprocess.call([sys.executable, "-m", "pytest", "-q", "tests"], cwd=RAIZ)
+    if codigo != 0:
+        return codigo
+
+    if "--sem-navegador" not in sys.argv:
+        print("== 4/4  Verificação da página no navegador", flush=True)
+        codigo = subprocess.call([sys.executable, str(RAIZ / "tools" / "verificar_pagina.py")], cwd=RAIZ)
+    return codigo
 
 
 if __name__ == "__main__":

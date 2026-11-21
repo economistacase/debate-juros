@@ -11,12 +11,21 @@
 
   /** Calibração-base (BCB, Nota de Estatísticas Fiscais, set/2026). */
   const PARAMETROS_BASE = Object.freeze({
-    d0: 0.829, custo0: 0.13, selic: 0.15, theta: 0.07, pb: -0.005,
+    d0: 0.829, custo0: 0.13, selic: 0.145, theta: 0.07, pb: -0.005,
     phi: 0.569, fatia_ipca: 0.199, fatia_cambio: 0.046,
-    m: 0.268, lam: 0.20, tau: 0.0, selic0: 0.15,
+    m: 0.268, lam: 0.268, tau: 0.0, selic0: 0.145,
     reacao: false, r_neutro: 0.05, pi0: 0.045,
-    kappa: 1.0, eta: 3.0, repasse: 0.10, persist: 0.50,
+    gamma: 1.0, eta: 3.0, repasse: 0.10, persist: 0.50,
   });
+
+  /** Proposta de Lara Resende (2026): custo médio de 7,5% em 2027–2030 e 5,5% a partir de 2031. */
+  const TRAJETORIA_PROPOSTA = Object.freeze([0.075, 0.075, 0.075, 0.075, 0.055, 0.055, 0.055, 0.055, 0.055, 0.055]);
+
+  /** Selic do ano t (t = 1 é o primeiro ano projetado): número ou trajetória anual. */
+  function selicNoAno(p, t) {
+    if (!Array.isArray(p.selic)) return p.selic;
+    return p.selic[Math.min(t, p.selic.length) - 1];
+  }
 
   function custoNaoSelicInicial(p) {
     const phiBase = PARAMETROS_BASE.phi;
@@ -31,6 +40,13 @@
     return ((r - theta) / (1 + theta)) * d;
   }
 
+  /** Aritmética pura: custo médio imposto ano a ano, sem composição nem reação. */
+  function trajetoriaCustoCaminho(d0, custos, theta, pb) {
+    const d = [d0];
+    for (const r of custos) d.push(d[d.length - 1] + variacaoDivida(d[d.length - 1], r, theta, pb));
+    return d;
+  }
+
   /** Simula a dívida/PIB por `horizonte` anos (mesma ordem de operações do Python). */
   function simularDivida(parcial, horizonte = HORIZONTE) {
     const p = Object.assign({}, PARAMETROS_BASE, parcial);
@@ -41,20 +57,23 @@
     let cambioAcum = 0;
     const s = {
       ano: [ANO_INICIAL], divida: [d], custo: [p.custo0], theta: [p.theta],
-      inflacao: [pi], premio: [0], hiato: [0], cambio: [0],
+      inflacao: [pi], premio: [0], hiato: [0], cambio: [0], selic: [p.selic0],
     };
     for (let t = 1; t <= horizonte; t++) {
+      const selic = selicNoAno(p, t);
       let hiato = 0, dep = 0, novoPremio = 0;
       if (p.reacao) {
-        hiato = Math.max(0, p.r_neutro + pi - p.selic);
+        hiato = Math.max(0, p.r_neutro + pi - selic);
         dep = p.eta * hiato;
         pi = p.pi0 + p.persist * (pi - p.pi0) + p.repasse * dep;
-        novoPremio = p.kappa * hiato;
+        novoPremio = p.gamma * hiato;
       }
       premio = (1 - p.m) * premio + p.m * novoPremio;
-      c = (1 - p.lam) * c + p.lam * (p.selic + p.tau);
+      const cFim = (1 - p.lam) * c + p.lam * (selic + p.tau);
+      const cMedio = 0.5 * (c + cFim);                 // convenção de meio de ano
+      c = cFim;
       const surpresaPi = pi - p.pi0;
-      const r = p.phi * p.selic + (1 - p.phi) * c + premio + p.fatia_ipca * surpresaPi;
+      const r = p.phi * selic + (1 - p.phi) * cMedio + premio + p.fatia_ipca * surpresaPi;
       const theta = p.theta + surpresaPi;
       const efeitoCambial = (p.fatia_cambio * d * dep) / (1 + theta);
       d = d + variacaoDivida(d, r, theta, p.pb) + efeitoCambial;
@@ -68,10 +87,20 @@
       s.premio.push(premio);
       s.hiato.push(hiato);
       s.cambio.push(cambioAcum);
+      s.selic.push(selic);
     }
     const n = s.divida.length - 1;
     s.pb_estabilizador = primarioEstabilizador(s.divida[n], s.custo[n], s.theta[n]);
     return s;
+  }
+
+  /** Queda da dívida (p.p. do PIB) no 1º ano por um corte de `delta` na Selic, mundo mecânico. */
+  function sensibilidadeSelic(parcial, delta = 0.01) {
+    const p = Object.assign({}, parcial, { reacao: false });
+    const s1 = selicNoAno(Object.assign({}, PARAMETROS_BASE, p), 1);
+    const base = simularDivida(p).divida[1];
+    const corte = simularDivida(Object.assign({}, p, { selic: s1 - delta })).divida[1];
+    return (base - corte) * 100;
   }
 
   /** Dívida final para cada Selic de uma grade (2% a 20%). */
@@ -125,8 +154,8 @@
   }
 
   global.Modelo = {
-    ANO_INICIAL, HORIZONTE, PARAMETROS_BASE,
-    variacaoDivida, primarioEstabilizador, simularDivida, varrerSelic,
+    ANO_INICIAL, HORIZONTE, PARAMETROS_BASE, TRAJETORIA_PROPOSTA,
+    variacaoDivida, primarioEstabilizador, trajetoriaCustoCaminho, simularDivida, varrerSelic, sensibilidadeSelic,
     inflacaoEquilibrio, trajetoriaFisherTaylor, conferirReferencia,
   };
 })(typeof window !== "undefined" ? window : globalThis);

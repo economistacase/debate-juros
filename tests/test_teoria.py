@@ -33,11 +33,36 @@ def test_aritmetica_do_dossie_custo_127():
     assert dd.trajetoria_custo_fixo(0.825, 0.127, 0.07, 0.0)[-1] == pytest.approx(1.38, abs=0.01)
 
 
-def test_elasticidade_selic_compativel_com_bcb():
-    """1 p.p. a menos de Selic reduz a dívida em ~0,45 p.p. do PIB no 1º ano (BCB: 0,48)."""
-    base = dd.simular(dd.Parametros(selic=0.15))["divida"][1]
-    corte = dd.simular(dd.Parametros(selic=0.14))["divida"][1]
-    assert 0.40 < (base - corte) * 100 < 0.52
+def test_sensibilidade_selic_bate_com_bcb():
+    """Mundo mecânico: corte de 1 p.p. na Selic, com 56,9% indexada, reduz a DBGG em 0,47–0,49 p.p. do PIB em 12 meses."""
+    p = dd.Parametros()
+    assert p.phi == pytest.approx(0.569) and p.lam == pytest.approx(0.268)
+    base = dd.simular(p)["divida"][1]
+    corte = dd.simular(replace(p, selic=p.selic - 0.01))["divida"][1]
+    assert 0.47 <= (base - corte) * 100 <= 0.49
+    assert dd.sensibilidade_selic() == pytest.approx((base - corte) * 100)
+
+
+def test_repasse_gradual_da_parcela_nao_selic():
+    """No ano 1 a parcela não-Selic absorve só meia rolagem; o repasse completo leva vários anos."""
+    p = dd.Parametros()
+    cortes = [(dd.simular(p)["custo"][t] - dd.simular(replace(p, selic=p.selic - 0.01))["custo"][t]) * 100
+              for t in (1, 2, 10)]
+    assert cortes[0] == pytest.approx(p.phi + (1 - p.phi) * p.lam / 2, abs=1e-9)
+    assert cortes[0] < cortes[1] < cortes[2] < 1.0
+
+
+def test_aritmetica_da_proposta_reproduz_dossie():
+    """Custo de 7,5% (2027–2030) e 5,5% (2031+), θ = 7%, primário zero: dívida perto de 78% do PIB em 2036."""
+    assert dd.trajetoria_custo_caminho(0.825, dd.TRAJETORIA_PROPOSTA, 0.07, 0.0)[-1] == pytest.approx(0.775, abs=0.01)
+
+
+def test_trajetoria_de_selic_reprecifica_mais_devagar_que_a_aritmetica():
+    """Com a mesma trajetória na Selic, a composição da dívida deixa a dívida acima da aritmética pura."""
+    sim = dd.simular(dd.Parametros(selic=list(dd.TRAJETORIA_PROPOSTA), pb=0.0))
+    arit = dd.trajetoria_custo_caminho(0.829, dd.TRAJETORIA_PROPOSTA, 0.07, 0.0)
+    assert sim["divida"][-1] > arit[-1]
+    assert sim["selic"][1:] == pytest.approx(list(dd.TRAJETORIA_PROPOSTA))
 
 
 def test_mecanico_monotono_na_selic():
@@ -55,12 +80,12 @@ def test_reacao_neutra_acima_do_juro_neutro():
 
 
 def test_reacao_inverte_o_efeito_do_corte_com_premio_alto():
-    """Com κ > 1, cortar abaixo do neutro passa a ELEVAR a dívida; com κ < 1, ainda reduz."""
-    def final(selic, kappa):
-        return dd.simular(dd.Parametros(selic=selic, reacao=True, kappa=kappa))["divida"][-1]
+    """Com γ > 1, cortar abaixo do neutro passa a ELEVAR a dívida; com γ < 1, ainda reduz."""
+    def final(selic, gamma):
+        return dd.simular(dd.Parametros(selic=selic, reacao=True, gamma=gamma))["divida"][-1]
     assert final(0.06, 1.5) > final(0.095, 1.5)
     assert final(0.06, 0.5) < final(0.095, 0.5)
-    sel, _ = dd.selic_que_minimiza_divida(dd.Parametros(reacao=True, kappa=1.5))
+    sel, _ = dd.selic_que_minimiza_divida(dd.Parametros(reacao=True, gamma=1.5))
     assert sel == pytest.approx(0.095, abs=1e-9)
 
 

@@ -1,0 +1,31 @@
+# Atualiza os dados do BCB (SGS + Focus) toda semana e publica se algo mudou.
+# As séries fiscais saem no fim de cada mês; a Selic e o Focus mudam com mais frequência.
+name: atualiza-dados
+on:
+  schedule:
+    - cron: "0 12 * * 1"      # segundas, 9h de Brasília
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  dados:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Baixa dados, gera cenários e testa
+        run: python build.py --dados
+      - name: Publica se houve mudança nos dados
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/painel.json
+          if git diff --cached --quiet; then
+            echo "Sem dados novos."
+          else
+            git commit -m "Dados: atualização automática do BCB ($(date +%Y-%m-%d))"
+            git push
+          fi

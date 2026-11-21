@@ -1,4 +1,6 @@
-# O Debate dos Juros: Laboratório Teórico e Empírico
+# Painel Juros — O Debate dos Juros no Brasil
+
+*Raimundo Casé - economista*
 
 **Página:** https://economistacase.github.io/debate-juros/
 
@@ -9,6 +11,29 @@ ela depende de um modelo de como os agentes reagem*.
 
 Este repositório é a camada **interativa, reproduzível e viva** do debate: em vez de mais um PDF expositivo,
 um laboratório aberto onde o leitor liga e desliga a reação dos agentes e vê, em tempo real, o que muda.
+
+## A página em cinco partes
+
+A pergunta organizadora é permanente: **por que o juro brasileiro é tão alto, e o que aconteceria se caísse?**
+A proposta de André Lara Resende (2026) entra como gancho e estudo de caso, não como eixo.
+
+1. **Os dados.** Placar com 8 indicadores, a conta da dívida com os números do mês e seis gráficos históricos
+   desde 2002, com seletor de período e marcos. Um botão leva os números atuais ao laboratório.
+2. **As lentes.** Seis explicações, do consenso à heterodoxia, cada uma com diagnóstico, mecanismo, proposta,
+   referências e status da evidência no Brasil (forte, mista ou em aberto):
+   (1) novo-keynesiana e regime de metas; (2) fiscal e prêmio de risco; (3) institucional e microestrutural;
+   (4) teoria fiscal e neofisheriana; (5) pós-keynesiana e novo-desenvolvimentista; (6) finanças funcionais e MMT,
+   mais a lente transversal da inércia e indexação.
+3. **O laboratório.** Os três blocos teóricos abaixo, cada um marcado com as lentes que representa.
+4. **O mapa do debate.** Sete afirmações × seis lentes (concorda, em parte, discorda, não central) e como arbitrar.
+5. **O episódio de 2026.** A proposta de Lara Resende, as críticas e o que o laboratório mostra.
+
+Próximas etapas: experimentos para as lentes 3, 5 e 6 (potência da Selic, canal de renda dos juros) e a Onda 2,
+que estima com dados brasileiros os parâmetros que discriminam as lentes.
+
+Dados: BCB/SGS (4189, 432, 13522, 13762, 4513, 5793, 5760, 4382, 3696), Focus e Nota de Estatísticas
+Fiscais. Atualização automática semanal (`.github/workflows/atualiza-dados.yml`); para atualizar à mão,
+`python build.py --dados`.
 
 ## Proposta em duas ondas
 
@@ -21,6 +46,14 @@ A página é organizada em camadas: **(1)** interação imediata (sliders e card
 **(2)** narrativa econômica (o texto de cada bloco); **(3)** caixa-preta aberta (seções “camada técnica”,
 este código e os testes).
 
+## Recursos da página
+
+- Retrato factual (Nota de Estatísticas Fiscais) e placar com dados do SGS/Focus atualizados toda semana.
+- Presets do simulador: **Status quo (BCB set/2026)** e **Proposta Lara Resende (2026)**.
+- **Link compartilhável** do cenário do Bloco 1 (`?cen=proposta&reacao=1&gamma=1.5#divida`).
+- **Download das séries em CSV**, **Imprimir / Salvar PDF** e índice lateral com a seção ativa.
+- Identidade visual comum ao Boletim Macroeconômico Semanal e ao Painel IPCA.
+
 ## Fundamentação dos blocos interativos
 
 ### Bloco 1: Laboratório da dívida
@@ -30,11 +63,11 @@ $$\Delta d_t = \frac{r_t - \theta_t}{1 + \theta_t}\, d_{t-1} - pb_t, \qquad pb^*
 
 - **Mundo mecânico:** só a Selic e a reprecificação gradual do estoque não-Selic mudam o custo implícito.
 - **Reação de mercado:** com a Selic abaixo do juro neutro nominal ($r^n + \pi^e$), abre-se um hiato de
-  credibilidade $g_t$ que eleva o prêmio na rolagem ($\kappa g_t$, sobre os 26,8% que vencem em 12 meses),
+  credibilidade $g_t$ que eleva o prêmio na rolagem ($\gamma g_t$, sobre os 26,8% que vencem em 12 meses),
   deprecia o câmbio e realimenta a inflação. A inflação maior corrói o estoque, mas encarece a parcela em
   IPCA, e a depreciação reavalia a parcela cambial.
-- **Resultado-chave:** abaixo do neutro nominal, o corte ainda reduz a dívida se $\kappa < 1$ e passa a
-  **elevá-la** se $\kappa > 1$. O valor de $\kappa$ é uma pergunta empírica: é a ponte para a Onda 2.
+- **Resultado-chave:** abaixo do neutro nominal, o corte ainda reduz a dívida se $\gamma < 1$ e passa a
+  **elevá-la** se $\gamma > 1$. O valor de $\gamma$ é uma pergunta empírica: é a ponte para a Onda 2.
 
 Calibração-base: BCB, Nota de Estatísticas Fiscais (set/2026). O motor reproduz a conta do dossiê de
 referência (custo de 12,7%, PIB nominal de 7%, primário zero ⇒ ~138% do PIB em 2036), o $pb^*$ de 4,7% do PIB e a
@@ -77,17 +110,21 @@ contra os casos de referência exportados pelo Python e exibe o desvio máximo n
 ├── CLAUDE.md                   # briefing persistente do projeto
 ├── requirements.txt
 ├── src/
+│   ├── dados/
+│   │   ├── bcb.py              # Parte 1: coleta SGS + Focus → docs/data/painel.json
+│   │   └── nota_fiscal.json    # juro implícito e composição (manual, da Nota Fiscal)
 │   ├── teoria/
 │   │   ├── dinamica_divida.py  # Bloco 1: dívida mecânica × reação de mercado
 │   │   └── regimes_tfnp.py     # Bloco 3: NK + TFNP, solver de Klein, exportação do JSON
 │   └── empirico/               # Onda 2 (reservado)
-├── tests/test_teoria.py        # 27 testes de consistência matemática
+├── tests/                      # 42 testes: teoria + integridade dos dados
 ├── docs/                       # GitHub Pages
 │   ├── index.html
 │   ├── css/style.css
 │   ├── js/modelo.js            # motor em tempo real (espelho do Python)
-│   ├── js/app.js               # interface, gráficos (Plotly) e equações (KaTeX)
-│   └── data/cenarios_teoricos.json
+│   ├── js/app.js               # laboratório: interface, gráficos (Plotly) e equações (KaTeX)
+│   ├── js/dados.js             # Parte 1: placar e séries históricas
+│   └── data/                   # painel.json (dados reais) e cenarios_teoricos.json
 └── .github/workflows/          # Onda 2: atualização mensal
 ```
 
@@ -95,8 +132,8 @@ contra os casos de referência exportados pelo Python e exibe o desvio máximo n
 
 ```bash
 pip install -r requirements.txt
-python build.py                          # gera docs/data/cenarios_teoricos.json + roda pytest
-python -m http.server 8000 -d docs       # abra http://localhost:8000
+python build.py                          # cenários + carimbo de versão + pytest + verificação no Chrome
+python servidor.py                       # abra http://localhost:8000 (sem cache)
 ```
 
 Só os testes: `python -m pytest -q`.
