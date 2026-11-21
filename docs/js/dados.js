@@ -238,6 +238,14 @@
       " apenas repuseram a inflação (erosão inflacionária). A identidade atribui, mas não identifica causalidade. <strong>Na dívida líquida a história é outra:</strong> " +
       "superávits primários subtraíram " + f(Math.abs(dl.superavits_2003_2013), 0) + " p.p. do PIB entre 2003 e 2013, e déficits somaram " +
       f(dl.deficits_2014_2025, 0) + " p.p. entre 2014 e 2025. Diferenças de 0,1 p.p. por arredondamento. Fonte: " + d.fonte + ".";
+    const v = nota.verificacao_decomposicao;
+    if (v) {
+      $("nota-decomposicao").innerHTML += "<br><strong>Conferência automática com as Notas oficiais (" + v.periodo + "):</strong> juros nominais " +
+        f(v.juros_nominais) + " p.p. (referência: " + f(m.juros_nominais) + "); emissões líquidas " + f(v.emissoes_liquidas) +
+        " (referência: " + f(d.fatores[2].valor) + "); câmbio e outros " + f(v.cambio_e_outros) + " (referência: " + f(d.fatores[3].valor) +
+        "); soma das variações " + f(v.soma_variacoes) + " (referência: " + f(d.soma_publicada) + "). As diferenças vêm de edições distintas: " +
+        "aqui, a edição de outubro do ano seguinte, que já incorpora revisões do PIB.";
+    }
   }
 
   // ------------------------------------------------------------------ carga

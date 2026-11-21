@@ -71,6 +71,22 @@ Dominância monetária: `φπ > 1`, `α > 1-β`. Dominância fiscal/TFNP: `φπ 
 `ω = 0` ≈ dívida pós-fixada (LFT); `ω` alto ≈ prefixada longa. Câmbio via UIP real (bloco recursivo).
 Resolvido por Klein (QZ) com checagem de Blanchard–Kahn em `src/teoria/regimes_tfnp.py`.
 
+## Etapas acrescentadas em 21/11/2026 (sem alterar os Blocos 1–3)
+
+- **Bloco 4 (potência da Selic, lente 3) e Bloco 5 (canal de renda, lentes 5/6):** `src/teoria/transmissao.py`
+  (modelo anual linear em desvios; potência = −Δπ do 2º ano por 1 p.p.; limiar c* = σ(1−s)/((1−τ)φd)), espelho
+  `docs/js/transmissao.js`, casos em `docs/data/transmissao.json`. `s` vem do SGS 20593/20539 (`painel.json → extras`).
+  σ, κ, ω são ilustrativos: a mensagem robusta é a potência RELATIVA.
+- **Nota Fiscal automática:** `src/dados/nota_bcb.py` lê as Tabelas 19, 21, 24 e 25 (localizadas pelo título; travessões
+  normalizados ANTES de remover acentos) e reconstrói 2016–2025 das edições de outubro para conferir a cascata.
+  Cache em `src/dados/_cache/` (fora do git). Roda em `build.py --dados` e no robô semanal.
+- **Onda 2:** `docs/onda2.html` + `docs/js/onda2.js`, dados de `src/empirico/onda2.py` (Tesouro Direto, Focus, SGS, Copom;
+  MQO + Newey-West em `estatistica.py`). γ estimado ≈ 0 (IC95% < 0,1): apresentar SEMPRE com os limites (viés de seleção,
+  mudança de regime/crítica de Lucas, medidas de varejo). Spread da LFT só de 2016 em diante (antes era fixo no TD).
+  A API do BCB devolve 304 intermitente: `fontes._get` repete com parâmetro anti-cache.
+- **Captação:** `docs/js/captacao.js` (Brevo/Kit/Substack/personalizado via `data-provedor` e `data-id` no form). Desligado
+  até o autor informar o provedor.
+
 ## Regra absoluta
 
 **Nunca inventar ou desenhar curvas ilustrativas "à mão".** Toda trajetória exibida no front-end deve

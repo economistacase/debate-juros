@@ -384,32 +384,16 @@
     }
   }
 
-  // ================================================================= captação
+  // ================================================================= captação (adaptadores em captacao.js)
   const form = $("form-cadastro");
   form.addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const status = $("form-status");
-    const nome = $("f-nome").value.trim(), email = $("f-email").value.trim();
-    if (form.website.value) return;                                         // honeypot
-    if (!nome || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      status.dataset.tipo = "erro"; status.textContent = "Preencha nome e um e-mail válido."; return;
-    }
-    const endpoint = form.dataset.endpoint;
-    if (!endpoint) {
-      status.dataset.tipo = "erro";
-      status.textContent = "O cadastro será ativado em breve. Volte para conferir.";
-      return;
-    }
-    const corpo = new FormData();
-    corpo.append(form.dataset.campoNome || "nome", nome);
-    corpo.append(form.dataset.campoEmail || "email", email);
-    try {
-      await fetch(endpoint, { method: "POST", body: corpo, mode: "no-cors" });
-      status.dataset.tipo = "ok"; status.textContent = "Pronto! Confirme a inscrição no seu e-mail.";
-      form.reset();
-    } catch (e) {
-      status.dataset.tipo = "erro"; status.textContent = "Não foi possível enviar agora. Tente de novo.";
-    }
+    if (form.website.value) return;                                         // honeypot anti-spam
+    const r = await window.Captacao.enviar(form, $("f-nome").value.trim(), $("f-email").value.trim());
+    status.dataset.tipo = r.tipo;
+    status.textContent = r.mensagem;
+    if (r.tipo === "ok") form.reset();
   });
 
   // ================================================================= inicialização

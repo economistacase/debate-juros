@@ -10,6 +10,8 @@ Fontes (códigos conferidos pelo nome oficial no web service do SGS):
     5760   NFSP 12 meses (% PIB), juros nominais
     4382   PIB acumulado em 12 meses, valores correntes (R$ milhões)
     3696   Câmbio livre R$/US$, venda, fim de período
+    20539  Saldo da carteira de crédito - Total (R$ milhões)
+    20593  Saldo da carteira de crédito com recursos direcionados - Total (R$ milhões)
     Focus  ExpectativasMercadoInflacao12Meses (IPCA, suavizada, mediana)
 
 O juro implícito da dívida bruta e a composição por indexador não estão no SGS: vêm da Nota de
@@ -41,6 +43,8 @@ SERIES_MENSAIS = {
     "juros_nominais": (5760, "Juros nominais em 12 meses (% do PIB)"),
     "pib_12m": (4382, "PIB em 12 meses (R$ milhões correntes)"),
     "cambio": (3696, "Câmbio R$/US$ (fim de período)"),
+    "credito_total": (20539, "Saldo de crédito total (R$ milhões)"),
+    "credito_direcionado": (20593, "Saldo de crédito direcionado (R$ milhões)"),
 }
 
 URL_SGS = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.{codigo}/dados?formato=json&dataInicial={inicio}"
@@ -162,6 +166,8 @@ def montar_painel() -> dict:
         "dbgg": brutas["dbgg"], "dlsp": brutas["dlsp"],
         "primario": primario, "juros_nominais": brutas["juros_nominais"],
         "cambio": brutas["cambio"], "pib_nominal_12m": theta,
+        "credito_direcionado_pct": combinar(brutas["credito_direcionado"], brutas["credito_total"],
+                                            lambda a, b: 100.0 * a / b),
     }
 
     m_d, dbgg = ultimo(brutas["dbgg"])
@@ -185,7 +191,12 @@ def montar_painel() -> dict:
             "fonte": "pb* = (r − θ)/(1 + θ)·d com d e θ do SGS e r da Nota Fiscal"},
     }
 
+    m_c, cred = ultimo(series["credito_direcionado_pct"])
+    extras = {"credito_direcionado_pct": {"valor": cred, "data": m_c,
+                                          "fonte": "SGS 20593 / SGS 20539 (saldo direcionado / saldo total)"}}
+
     return {
+        "extras": extras,
         "meta": {"atualizado_em": date.today().isoformat(), "gerador": "src/dados/bcb.py",
                  "rotulos": {k: v[1] for k, v in SERIES_MENSAIS.items()}},
         "placar": placar,

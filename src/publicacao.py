@@ -49,5 +49,13 @@ def carimbar(index: Path = INDEX) -> list[str]:
     return carimbados
 
 
+def carimbar_todas() -> list[str]:
+    """Carimba todas as páginas HTML de docs/ (index.html, onda2.html, ...)."""
+    feitos = []
+    for pagina in sorted(DOCS.glob("*.html")):
+        feitos += [f"{pagina.name}: {c}" for c in carimbar(pagina)]
+    return feitos
+
+
 if __name__ == "__main__":
-    print("\n".join(carimbar()))
+    print("\n".join(carimbar_todas()))

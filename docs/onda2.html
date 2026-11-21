@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel Juros — Onda 2: o que os dados dizem</title>
+  <meta name="description" content="Primeira estimativa empírica da sensibilidade do prêmio de risco a cortes da Selic (γ) e estudo de eventos do Copom, com dados do Tesouro Direto, do Focus e do BCB.">
+  <meta property="og:title" content="Painel Juros — Onda 2: o que os dados dizem">
+  <meta property="og:type" content="website">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <link rel="stylesheet" href="css/style.css?v=fdb52f0c74">
+
+  <script>
+    (function () {
+      var avisado = false;
+      window.addEventListener("error", function (e) {
+        if (avisado || !e.filename || e.filename.indexOf(location.host) === -1) return;
+        avisado = true;
+        var mostrar = function () {
+          var faixa = document.createElement("div");
+          faixa.className = "faixa-erro";
+          faixa.setAttribute("role", "alert");
+          faixa.innerHTML = "Parte da página não carregou corretamente. <button type='button'>Recarregar</button> <small>(se persistir, use Ctrl+F5)</small>";
+          faixa.querySelector("button").onclick = function () { location.reload(); };
+          document.body.insertBefore(faixa, document.body.firstChild);
+        };
+        if (document.body) mostrar(); else document.addEventListener("DOMContentLoaded", mostrar);
+      });
+    })();
+  </script>
+
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js"></script>
+  <script defer src="js/onda2.js?v=abbef82acb"></script>
+  <script defer src="js/pagina.js?v=82b279e71b"></script>
+</head>
+<body data-indice="medindo:O que estamos medindo;series:Os dados;estimativa:A estimativa de γ;leitura:Como ler o resultado;eventos:Estudo de eventos do Copom;metodo:Método e limitações">
+
+<header class="topo">
+  <div class="topo__interno">
+    <a class="marca" href="https://economistacase.github.io/">Observatório <span>Macro</span></a>
+    <nav class="nav" aria-label="Estudos">
+      <a href="https://economistacase.github.io/boletim-macro-python/">Boletim Macro</a>
+      <a href="https://economistacase.github.io/relatorio-ipca/relatorio_ipca.html">Inflação &amp; IPCA</a>
+      <a href="./">Juros &amp; Dívida</a>
+      <a href="onda2.html" aria-current="page">Onda 2</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="largura">
+    <h1>Painel Juros — Onda 2: o que os dados dizem</h1>
+    <p class="subtitulo">Primeira estimativa empírica de γ e estudo de eventos do Copom</p>
+    <div class="meta-autor">
+      <div><p class="meta-autor__rot">Autor</p><p class="meta-autor__val">Raimundo Casé - economista</p></div>
+      <div><p class="meta-autor__rot">Estimativas geradas em</p><p class="meta-autor__val" id="o2-gerado">–</p></div>
+      <div><p class="meta-autor__rot">Página principal</p><p class="meta-autor__val"><a href="./">O Debate dos Juros no Brasil</a></p></div>
+    </div>
+    <button type="button" class="print-btn" id="bt-imprimir">Imprimir / Salvar PDF</button>
+
+    <div class="objetivo">
+      <h2>Objetivo</h2>
+      <p>O <a href="./#divida">Bloco 1 do laboratório</a> mostra que o efeito de um corte de juros sobre a dívida depende de um único
+        parâmetro: γ, o quanto o prêmio exigido para rolar a dívida sobe quando a Selic é levada abaixo do juro neutro. Com γ abaixo
+        de 1, cortar ajuda; acima de 1, atrapalha. Esta página faz a primeira tentativa de medir γ com dados brasileiros, e testa
+        como juros longos, câmbio e expectativas reagem às surpresas do Copom.</p>
+    </div>
+    <aside class="aviso">
+      <p class="aviso__rot">Resultado exploratório</p>
+      <p>As estimativas abaixo são uma primeira aproximação, com limitações sérias de identificação, descritas em
+        <a href="#leitura">Como ler o resultado</a>. Elas informam o debate, mas não o encerram.</p>
+    </aside>
+  </div>
+</section>
+
+<section class="bloco bloco--alt" id="medindo">
+  <div class="largura">
+    <header class="bloco__cabeca">
+      <h2>O que estamos medindo</h2>
+      <p class="bloco__lide">No laboratório, o prêmio novo exigido na rolagem é proporcional ao hiato de credibilidade:
+        $$p^{\text{novo}}_t = \gamma\,g_t,\qquad g_t = \max\left(0,\; r^n + \pi^e_t - \text{Selic}_t\right)$$
+        em que \(r^n\) é o juro real neutro e \(\pi^e_t\) a inflação esperada para 12 meses (Focus). Para estimar γ, precisamos de uma
+        medida observável do prêmio marginal. Usamos duas:</p>
+    </header>
+    <div class="texto-corrido">
+      <p><strong>1. Spread da LFT</strong> (Tesouro Selic, 2 a 6 anos): quanto o Tesouro paga acima da Selic para rolar a dívida
+        pós-fixada. É a contrapartida mais direta do prêmio do Bloco 1, mas só é informativa a partir de 2016; antes disso, a taxa do
+        Tesouro Direto era praticamente fixa.</p>
+      <p><strong>2. Prêmio prefixado</strong>: taxa da LTN (Tesouro Prefixado, 2 a 4 anos) menos a Selic média esperada pelo Focus
+        para os três anos seguintes. Captura o prêmio de risco e de prazo exigido na dívida prefixada, de 2006 em diante.</p>
+    </div>
+  </div>
+</section>
+
+<section class="bloco" id="series">
+  <div class="largura">
+    <header class="bloco__cabeca"><h2>Os dados</h2></header>
+    <div class="grade-dados">
+      <figure class="grafico">
+        <figcaption><strong>Hiato de credibilidade, g</strong> · p.p., com juro neutro de 5%</figcaption>
+        <div id="g-o2-hiato" class="plot" role="img" aria-label="Hiato de credibilidade ao longo do tempo"></div>
+        <p class="nota">Positivo quando a Selic está abaixo do juro neutro nominal: 2012–13 e 2017–21.</p>
+      </figure>
+      <figure class="grafico">
+        <figcaption><strong>Prêmio prefixado</strong> · p.p.</figcaption>
+        <div id="g-o2-pre" class="plot" role="img" aria-label="Prêmio prefixado ao longo do tempo"></div>
+        <p class="nota">LTN de 2 a 4 anos menos a Selic média esperada pelo Focus.</p>
+      </figure>
+      <figure class="grafico">
+        <figcaption><strong>Spread da LFT</strong> · p.p. acima da Selic</figcaption>
+        <div id="g-o2-lft" class="plot" role="img" aria-label="Spread da LFT ao longo do tempo"></div>
+        <p class="nota">Tesouro Selic de 2 a 6 anos, a partir de 2016.</p>
+      </figure>
+      <figure class="grafico">
+        <figcaption><strong>Selic e expectativas</strong> · % a.a.</figcaption>
+        <ul class="legenda legenda--mini" id="leg-o2-selic"></ul>
+        <div id="g-o2-selic" class="plot" role="img" aria-label="Selic, Selic esperada e juro neutro nominal"></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="bloco bloco--alt" id="estimativa">
+  <div class="largura">
+    <header class="bloco__cabeca">
+      <h2>A estimativa de γ</h2>
+      <p class="bloco__lide">Regressão mensal do prêmio sobre o hiato de credibilidade, \(P_t = a + \gamma\,g_t + u_t\), com erros-padrão
+        de Newey-West. A versão dinâmica, \(P_t = a + \rho P_{t-1} + b\,g_t\), dá o efeito de longo prazo \(b/(1-\rho)\).
+        Escolha o juro neutro:</p>
+    </header>
+    <div class="periodos" role="group" aria-label="Juro real neutro" id="o2-rn"></div>
+    <div class="cards" id="o2-cards"></div>
+    <div class="grade-dados">
+      <figure class="grafico">
+        <figcaption><strong>Prêmio prefixado × hiato</strong> · cada ponto é um mês</figcaption>
+        <div id="g-o2-disp-pre" class="plot" role="img" aria-label="Dispersão do prêmio prefixado contra o hiato"></div>
+      </figure>
+      <figure class="grafico">
+        <figcaption><strong>Spread da LFT × hiato</strong> · cada ponto é um mês</figcaption>
+        <div id="g-o2-disp-lft" class="plot" role="img" aria-label="Dispersão do spread da LFT contra o hiato"></div>
+      </figure>
+    </div>
+    <h3 class="subtitulo-secao">Todas as estimativas</h3>
+    <div class="tabela-rolagem">
+      <table class="tabela tabela--estimativas" id="o2-tabela">
+        <thead><tr><th scope="col">Medida</th><th scope="col">r<sup>n</sup></th><th scope="col">γ (IC 95%)</th>
+          <th scope="col">γ de longo prazo (ep)</th><th scope="col">Meses</th><th scope="col">Meses com g &gt; 0</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="bloco" id="leitura">
+  <div class="largura">
+    <header class="bloco__cabeca"><h2>Como ler o resultado</h2></header>
+    <div class="texto-corrido" id="o2-leitura"></div>
+    <aside class="aviso">
+      <p class="aviso__rot">Por que isso não encerra o debate</p>
+      <p><strong>Viés de seleção.</strong> O Banco Central tende a manter a Selic alta justamente quando o risco fiscal sobe (como no fim de
+        2024), o que deixa o hiato em zero quando o prêmio é alto. Isso empurra a estimativa de γ para baixo.</p>
+      <p><strong>Mudança de regime.</strong> Os cortes observados foram decididos por um Banco Central com metas de inflação e, em boa
+        parte do período, com uma âncora fiscal. A proposta de 2026 muda o regime, com metas de juros fixadas por um conselho
+        fiscal-monetário. Um regime que nunca foi observado não aparece nos dados (crítica de Lucas), e é justamente esse o ponto
+        da <a href="./#lente-2">lente 2</a>.</p>
+      <p><strong>Medidas.</strong> As taxas do Tesouro Direto são do varejo e podem embutir liquidez e oferta, além de risco.</p>
+    </aside>
+    <p><a class="botao-contorno" id="o2-link-lab" href="./#divida">Testar no laboratório com o γ estimado →</a></p>
+  </div>
+</section>
+
+<section class="bloco bloco--alt" id="eventos">
+  <div class="largura">
+    <header class="bloco__cabeca">
+      <h2>Estudo de eventos do Copom</h2>
+      <p class="bloco__lide">Para cada reunião desde 2006, a surpresa é a diferença entre a Selic decidida e a mediana do Focus para aquela
+        reunião, na última pesquisa antes da decisão. Medimos a reação do dia seguinte (a decisão sai à noite) da LTN, do spread da LFT e
+        do câmbio, e a variação da inflação esperada uma semana depois. Regressão: \(\Delta y = a + b\cdot\text{surpresa}\), com
+        erros-padrão robustos.</p>
+    </header>
+    <div class="grade-dados">
+      <figure class="grafico">
+        <figcaption><strong>Câmbio × surpresa</strong> · variação % do dólar no dia seguinte</figcaption>
+        <div id="g-o2-ev-cambio" class="plot" role="img" aria-label="Reação do câmbio às surpresas do Copom"></div>
+      </figure>
+      <figure class="grafico">
+        <figcaption><strong>LTN × surpresa</strong> · variação da taxa no dia seguinte, p.p.</figcaption>
+        <div id="g-o2-ev-ltn" class="plot" role="img" aria-label="Reação da taxa prefixada às surpresas do Copom"></div>
+      </figure>
+    </div>
+    <div class="tabela-rolagem tabela-rolagem--compacta" style="margin-top:16px">
+      <table class="tabela tabela--estimativas" id="o2-eventos">
+        <thead><tr><th scope="col">Resposta</th><th scope="col">b por 1 p.p. de surpresa</th><th scope="col">p-valor</th>
+          <th scope="col">Reuniões</th><th scope="col">Surpresas ≠ 0</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="leitura" id="o2-leitura-eventos"></p>
+  </div>
+</section>
+
+<section class="bloco" id="metodo">
+  <div class="largura">
+    <header class="bloco__cabeca"><h2>Método e limitações</h2></header>
+    <div class="texto-corrido">
+      <p><strong>Dados.</strong> <span id="o2-fontes"></span>. Frequência mensal (médias) para γ; diária para os eventos.</p>
+      <p><strong>Estimação.</strong> MQO com erros-padrão de Newey-West (defasagens pela regra \(\lfloor 4(n/100)^{2/9}\rfloor\));
+        nos eventos, erros robustos de White. O erro-padrão do γ de longo prazo vem do método delta. Código em
+        <code>src/empirico/onda2.py</code>, testado em <code>tests/test_empirico.py</code>.</p>
+      <p><strong>Próximos passos.</strong> Identificar γ com variação exógena: eventos fiscais (anúncios de regras e de metas),
+        modelos de vetores autorregressivos com restrições de sinal e a decomposição do prêmio entre risco de crédito, prazo e liquidez.
+        Também estimar σ e a propensão a consumir a renda de juros dos <a href="./#potencia">Blocos 4</a> e <a href="./#renda">5</a>.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="rodape">
+  <div class="largura">
+    <div class="assinatura">
+      <p><strong>Painel Juros — Onda 2: o que os dados dizem</strong> · Estimativas de <span id="rodape-o2">–</span></p>
+      <p>Elaborado por Raimundo Casé - economista | <a href="mailto:economistacase@gmail.com">economistacase@gmail.com</a></p>
+      <p>Fontes primárias: Tesouro Nacional — Tesouro Transparente (taxas do Tesouro Direto) | BCB — Banco Central do Brasil
+        (SGS: Selic, meta Selic, PTAX; boletim Focus; comunicados do Copom).</p>
+      <p>As análises e opiniões expressas neste painel são de responsabilidade exclusiva do autor e não representam qualquer instituição.</p>
+    </div>
+    <p class="rodape__links"><a href="./">Página principal</a> · <a href="https://github.com/economistacase/debate-juros">Código e testes no GitHub</a> ·
+      Material didático; não é recomendação de investimento.</p>
+  </div>
+</footer>
+</body>
+</html>

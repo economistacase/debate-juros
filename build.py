@@ -20,18 +20,26 @@ def main() -> int:
     from src import publicacao
 
     if "--dados" in sys.argv:
-        from src.dados import bcb
+        from src.dados import bcb, nota_bcb
+        print("== 0/4  Lendo a Nota de Estatísticas Fiscais mais recente (BCB)")
+        r = nota_bcb.atualizar()
+        print("   " + ", ".join(f"{k}={v}" for k, v in r.items()))
         print("== 0/4  Baixando dados do BCB (SGS + Focus)")
         destino = bcb.exportar()
         print(f"   ok: {destino.relative_to(RAIZ)} ({destino.stat().st_size / 1024:.0f} KB)")
+        from src.empirico import onda2
+        print("== 0/4  Onda 2: Tesouro Direto, Focus e Copom (estimativa de γ e eventos)")
+        print(f"   ok: {onda2.exportar(renovar=True).relative_to(RAIZ)}")
 
     print("== 1/4  Nota Fiscal e cenários teóricos")
     print(f"   ok: {nota.publicar().relative_to(RAIZ)}")
     destino = regimes_tfnp.exportar()
     print(f"   ok: {destino.relative_to(RAIZ)} ({destino.stat().st_size / 1024:.1f} KB)")
+    from src.teoria import transmissao
+    print(f"   ok: {transmissao.exportar().relative_to(RAIZ)}")
 
     print("== 2/4  Carimbo de versão nos CSS/JS (evita cache antigo no navegador)")
-    for arq in publicacao.carimbar():
+    for arq in publicacao.carimbar_todas():
         print(f"   ok: {arq}")
 
     print("== 3/4  Testes de consistência", flush=True)

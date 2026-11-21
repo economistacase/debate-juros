@@ -10,3 +10,7 @@ referencias/
 # Versionar explicitamente (garantia contra regras futuras mais amplas)
 !docs/data/cenarios_teoricos.json
 !src/empirico/.gitkeep
+
+# cache das planilhas baixadas do BCB
+src/dados/_cache/
+src/empirico/_cache/

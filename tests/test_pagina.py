@@ -13,18 +13,26 @@ IDS_HTML = set(re.findall(r'\bid="([\w-]+)"', HTML))
 DINAMICOS = re.compile(r"^g-r-")
 
 
+# página onde cada script roda (os demais rodam no index.html; pagina.js roda em todas)
+PAGINAS_DO_JS = {"onda2.js": ["onda2.html"], "pagina.js": ["index.html", "onda2.html"]}
+
+
 @pytest.mark.parametrize("arquivo", sorted(p.name for p in (DOCS / "js").glob("*.js")))
 def test_ids_do_js_existem_no_html(arquivo):
     js = (DOCS / "js" / arquivo).read_text(encoding="utf-8")
     usados = set(re.findall(r'\$\("([\w-]+)"\)', js)) | set(re.findall(r'getElementById\("([\w-]+)"\)', js))
-    faltando = sorted(i for i in usados if i not in IDS_HTML and not DINAMICOS.match(i))
-    assert not faltando, f"{arquivo} usa ids ausentes do index.html: {faltando}"
+    opcionais = {"bt-csv"} if arquivo == "pagina.js" else set()          # usado só se existir
+    for pagina in PAGINAS_DO_JS.get(arquivo, ["index.html"]):
+        ids = set(re.findall(r'\bid="([\w-]+)"', (DOCS / pagina).read_text(encoding="utf-8")))
+        faltando = sorted(i for i in usados if i not in ids and i not in opcionais and not DINAMICOS.match(i))
+        assert not faltando, f"{arquivo} usa ids ausentes de {pagina}: {faltando}"
 
 
-def test_scripts_e_estilos_locais_existem_e_estao_carimbados():
-    refs = publicacao.referencias(HTML)
+@pytest.mark.parametrize("pagina", ["index.html", "onda2.html"])
+def test_scripts_e_estilos_locais_existem_e_estao_carimbados(pagina):
+    refs = publicacao.referencias((DOCS / pagina).read_text(encoding="utf-8"))
     nomes = {c for c, _ in refs}
-    assert {"css/style.css", "js/modelo.js", "js/app.js", "js/dados.js", "js/pagina.js"} <= nomes
+    assert {"css/style.css", "js/pagina.js"} <= nomes
     for caminho, versao in refs:
         arquivo = DOCS / caminho
         assert arquivo.exists(), caminho

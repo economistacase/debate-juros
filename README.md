@@ -46,6 +46,19 @@ A página é organizada em camadas: **(1)** interação imediata (sliders e card
 **(2)** narrativa econômica (o texto de cada bloco); **(3)** caixa-preta aberta (seções “camada técnica”,
 este código e os testes).
 
+## Novidades (Onda 1.2 e primeira entrega da Onda 2)
+
+- **Bloco 4 — A potência da Selic** (lente 3): crédito direcionado (43,7% do saldo, SGS) e inércia reduzem a potência do
+  aperto; com a fatia atual, o mesmo aperto tem ~54% da potência e a Selic precisa subir ~1,85 vez mais.
+- **Bloco 5 — O canal de renda dos juros** (lentes 5 e 6): cada 1 p.p. de Selic transfere ~R$ 63 bi/ano aos detentores da
+  dívida atrelada à Selic; o aperto só aquece a demanda se a propensão a consumir essa renda superar c* (≈ 0,70 com σ = 0,5).
+- **Nota Fiscal automática** (`src/dados/nota_bcb.py`): juro implícito, composição, vencimentos e fatores da DBGG lidos das
+  planilhas do BCB; a cascata 2016–2025 é conferida contra 10 edições oficiais.
+- **[Onda 2](https://economistacase.github.io/debate-juros/onda2.html)** — primeira estimativa de γ (spread da LFT e prêmio
+  prefixado contra o hiato de credibilidade) e estudo de eventos do Copom (2006–2026). Resultado exploratório, com limitações
+  de identificação descritas na própria página.
+- **Captação de e-mail** com adaptadores para Brevo, Kit e Substack (`docs/js/captacao.js`).
+
 ## Recursos da página
 
 - Retrato factual (Nota de Estatísticas Fiscais) e placar com dados do SGS/Focus atualizados toda semana.
@@ -117,7 +130,7 @@ contra os casos de referência exportados pelo Python e exibe o desvio máximo n
 │   │   ├── dinamica_divida.py  # Bloco 1: dívida mecânica × reação de mercado
 │   │   └── regimes_tfnp.py     # Bloco 3: NK + TFNP, solver de Klein, exportação do JSON
 │   └── empirico/               # Onda 2 (reservado)
-├── tests/                      # 42 testes: teoria + integridade dos dados
+├── tests/                      # 77 testes: teoria, dados, Nota Fiscal, Onda 2 e página
 ├── docs/                       # GitHub Pages
 │   ├── index.html
 │   ├── css/style.css

@@ -15,17 +15,26 @@
     ["divida", "Bloco 1 — Dívida", true],
     ["taylor", "Bloco 2 — Taylor", true],
     ["regimes", "Bloco 3 — Regimes", true],
+    ["potencia", "Bloco 4 — Potência", true],
+    ["renda", "Bloco 5 — Renda", true],
     ["mapa", "4. O mapa do debate"],
     ["episodio", "5. O episódio de 2026"],
     ["sintese", "Síntese e Perspectivas"],
     ["proximo", "Próxima etapa"],
   ];
 
+  function itensDaPagina() {
+    // páginas além da principal declaram o índice em <body data-indice="id:Rótulo;id:Rótulo">
+    const d = document.body.dataset.indice;
+    return d ? d.split(";").map((par) => par.split(":")) : ITENS;
+  }
+
   function montarIndice() {
+    const itens = itensDaPagina();
     const nav = document.createElement("nav");
     nav.className = "indice";
     nav.setAttribute("aria-label", "Índice");
-    nav.innerHTML = '<p class="indice__titulo">Índice</p><ul>' + ITENS.filter(([id]) => $(id)).map(([id, rot, sub]) =>
+    nav.innerHTML = '<p class="indice__titulo">Índice</p><ul>' + itens.filter(([id]) => $(id)).map(([id, rot, sub]) =>
       '<li' + (sub ? ' class="sub"' : "") + '><a href="#' + id + '" data-alvo="' + id + '">' + rot + "</a></li>").join("") + "</ul>";
     document.body.appendChild(nav);
 
@@ -34,7 +43,7 @@
     const obs = new IntersectionObserver((entradas) => {
       entradas.forEach((e) => (e.isIntersecting ? visiveis.add(e.target.id) : visiveis.delete(e.target.id)));
       // seção ativa = a primeira, na ordem do índice, que está na faixa superior da tela
-      const ativo = ITENS.map(([id]) => id).find((id) => visiveis.has(id));
+      const ativo = itens.map(([id]) => id).find((id) => visiveis.has(id));
       if (ativo) links.forEach((a, id) => a.classList.toggle("ativo", id === ativo));
     }, { rootMargin: "-80px 0px -65% 0px" });
     links.forEach((_, id) => obs.observe($(id)));

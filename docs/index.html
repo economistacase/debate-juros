@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-  <link rel="stylesheet" href="css/style.css?v=048496f3a9">
+  <link rel="stylesheet" href="css/style.css?v=fdb52f0c74">
 
   <!-- Guarda: se um script da própria página falhar (ex.: versão antiga em cache), avisa em vez de deixar blocos vazios. -->
   <script>
@@ -41,9 +41,11 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js"></script>
   <script defer src="js/modelo.js?v=be6f4831c7"></script>
-  <script defer src="js/app.js?v=0e9f169620"></script>
-  <script defer src="js/dados.js?v=2bb47a981d"></script>
-  <script defer src="js/pagina.js?v=5d1b2cbb51"></script>
+  <script defer src="js/captacao.js?v=be2615a5f3"></script>
+  <script defer src="js/app.js?v=190a702d39"></script>
+  <script defer src="js/transmissao.js?v=e300fc5fae"></script>
+  <script defer src="js/dados.js?v=405b6676fa"></script>
+  <script defer src="js/pagina.js?v=82b279e71b"></script>
 </head>
 <body>
 
@@ -55,6 +57,7 @@
       <a href="https://economistacase.github.io/boletim-macro-python/">Boletim Macro</a>
       <a href="https://economistacase.github.io/relatorio-ipca/relatorio_ipca.html">Inflação &amp; IPCA</a>
       <a href="./" aria-current="page">Juros &amp; Dívida</a>
+      <a href="onda2.html">Onda 2</a>
       <a href="#cadastro" class="nav__cta">Newsletter</a>
     </nav>
   </div>
@@ -245,7 +248,7 @@
           <dt>Referências</dt><dd>Arida, Bacha e Lara Resende (2005); Segura-Ubiergo (2012, FMI); Bonomo e Martins (2016, BCB).</dd>
           <dt>Evidência no Brasil</dt><dd><span class="status" data-status="mista">Mista</span> Há evidência de transmissão mais fraca no crédito direcionado. A hipótese da incerteza jurisdicional é plausível, mas difícil de testar.</dd>
         </dl>
-        <p class="lente__lab">No laboratório: em breve, um experimento sobre a potência da Selic.</p>
+        <p class="lente__lab">No laboratório: <a href="#potencia">Bloco 4</a>, a potência da Selic com crédito direcionado e inércia.</p>
       </article>
 
       <article class="lente" id="lente-4" style="--cor-lente: var(--l4)">
@@ -271,7 +274,7 @@
           <dt>Referências</dt><dd>Keynes (1936); Bresser-Pereira e Nakano (2002); Oreiro; Modenesi.</dd>
           <dt>Evidência no Brasil</dt><dd><span class="status" data-status="mista">Mista</span> O câmbio é de fato um canal central da transmissão no Brasil, o que é coerente com a lente. A tese da convenção e dos interesses é difícil de testar.</dd>
         </dl>
-        <p class="lente__lab">No laboratório: em breve, o canal cambial e o distributivo.</p>
+        <p class="lente__lab">No laboratório: <a href="#renda">Bloco 5</a>, o canal de renda (distributivo); o canal cambial está no <a href="#regimes">Bloco 3</a>.</p>
       </article>
 
       <article class="lente" id="lente-6" style="--cor-lente: var(--l6)">
@@ -284,7 +287,7 @@
           <dt>Referências</dt><dd>Lerner (1943); Mosler; Wray; Kelton (2020); Lara Resende (2020).</dd>
           <dt>Evidência no Brasil</dt><dd><span class="status" data-status="aberta">Em aberto</span> O canal de renda é mensurável (quem detém a dívida e quanto consome dessa renda), mas ainda não foi estimado de forma sistemática para o Brasil.</dd>
         </dl>
-        <p class="lente__lab">No laboratório: em breve, o canal de renda dos juros.</p>
+        <p class="lente__lab">No laboratório: <a href="#renda">Bloco 5</a>, o canal de renda dos juros.</p>
       </article>
     </div>
 
@@ -302,8 +305,8 @@
   <div class="largura">
     <p class="bloco__num">Parte 3 · O laboratório</p>
     <h2>Por que as lentes divergem</h2>
-    <p>Três experimentos, do mais simples ao mais completo. Em cada um, você controla uma hipótese que separa as lentes e vê, em tempo
-      real, o que ela implica. As lentes 3, 5 e 6 ganham experimentos próprios na próxima etapa: a potência da Selic e o canal de renda
+    <p>Cinco experimentos, do mais simples ao mais completo. Em cada um, você controla uma hipótese que separa as lentes e vê, em tempo
+      real, o que ela implica. Os Blocos 4 e 5 trazem os experimentos das lentes 3, 5 e 6: a potência da Selic e o canal de renda
       dos juros. Para começar do Brasil de hoje, use o botão “Levar estes números ao laboratório” da Parte 1.</p>
   </div>
 </section>
@@ -358,7 +361,7 @@
           <label for="sl-gamma"><span>Sensibilidade do prêmio, γ</span> <output id="out-gamma"></output></label>
           <input type="range" id="sl-gamma" min="0" max="2" step="0.05" value="1">
           <p class="nota">Pontos de prêmio exigidos na rolagem por ponto de Selic abaixo do neutro nominal
-            (juro real neutro de 5% + inflação esperada). γ é o parâmetro que a Onda 2 vai estimar.</p>
+            (juro real neutro de 5% + inflação esperada). <a href="onda2.html#estimativa">A Onda 2 estima γ com dados brasileiros</a>.</p>
         </div>
         <button type="button" class="botao-contorno" id="bt-compartilhar">Copiar link deste cenário</button>
         <p class="nota" id="status-compartilhar" role="status"></p>
@@ -504,6 +507,138 @@
   </div>
 </section>
 
+<!-- ============================================================ BLOCO 4 — POTÊNCIA DA SELIC (lente 3) -->
+<section class="bloco bloco--alt" id="potencia">
+  <div class="largura">
+    <header class="bloco__cabeca">
+      <p class="bloco__num">Bloco 4</p>
+      <h2>A potência da Selic</h2>
+      <p class="tags-lente"><a class="chip" href="#lente-3" style="--cor-lente: var(--l3)"><b>3</b>Crédito direcionado: lente institucional</a><a class="chip" href="#lentes" style="--cor-lente: var(--l4)"><b>↔</b>Inércia: lente transversal</a></p>
+      <p class="bloco__lide">
+        Se parte do crédito não responde à Selic (BNDES, rural, habitacional, consignado com taxas reguladas), o juro precisa
+        subir mais para obter o mesmo efeito sobre a inflação. Com indexação, a inflação repete o passado e demora mais a ceder.
+        $$x_t = -\sigma\,(1-s)\,(i_t-\pi_{t-1}),\qquad \pi_t = \omega\,\pi_{t-1} + \kappa\,x_t$$
+        em que \(s\) é a fatia do crédito direcionado e \(\omega\) a inércia. Um aperto mantido por alguns anos; o que muda com \(s\)?
+      </p>
+    </header>
+
+    <div class="painel">
+      <div class="controles">
+        <div class="controle">
+          <label for="sl-s"><span>Crédito direcionado, <i>s</i></span> <output id="out-s"></output></label>
+          <input type="range" id="sl-s" min="0" max="80" step="0.1" value="43.7">
+          <p class="nota" id="nota-s"></p>
+        </div>
+        <div class="controle">
+          <label for="sl-omega"><span>Inércia, ω</span> <output id="out-omega"></output></label>
+          <input type="range" id="sl-omega" min="0" max="0.9" step="0.05" value="0.5">
+        </div>
+        <div class="controle">
+          <label for="sl-delta4"><span>Aperto na Selic</span> <output id="out-delta4"></output></label>
+          <input type="range" id="sl-delta4" min="0.25" max="3" step="0.25" value="1">
+        </div>
+        <div class="controle">
+          <label for="sl-dur4"><span>Duração do aperto</span> <output id="out-dur4"></output></label>
+          <input type="range" id="sl-dur4" min="1" max="4" step="1" value="2">
+        </div>
+        <div class="controle">
+          <label for="sl-sigma4"><span>Sensibilidade da demanda, σ</span> <output id="out-sigma4"></output></label>
+          <input type="range" id="sl-sigma4" min="0.1" max="1" step="0.05" value="0.5">
+          <p class="nota">σ, κ e ω são ilustrativos. O resultado robusto é o relativo: quanto a potência cai com <i>s</i>.</p>
+        </div>
+      </div>
+      <div class="resultados">
+        <div class="cards">
+          <div class="card"><p class="card__rot">Potência relativa</p><p class="card__val" id="c4-rel">–</p><p class="card__sub">da que haveria sem crédito direcionado</p></div>
+          <div class="card"><p class="card__rot">Inflação no 2º ano</p><p class="card__val" id="c4-pi2">–</p><p class="card__sub" id="c4-pi2-sub"></p></div>
+          <div class="card"><p class="card__rot">Aperto para −1 p.p. de inflação</p><p class="card__val" id="c4-nec">–</p><p class="card__sub" id="c4-nec-sub"></p></div>
+          <div class="card"><p class="card__rot">Custo em atividade</p><p class="card__val" id="c4-sac">–</p><p class="card__sub">hiato acumulado em 6 anos, p.p.</p></div>
+        </div>
+        <figure class="grafico">
+          <figcaption><strong>Resposta da inflação ao aperto</strong> · desvio, p.p.</figcaption>
+          <div id="g-potencia" class="plot" role="img" aria-label="Resposta da inflação ao aperto com e sem crédito direcionado"></div>
+        </figure>
+        <figure class="grafico">
+          <figcaption><strong>Quanto a Selic precisa subir</strong> · aperto necessário para reduzir a inflação em 1 p.p. no 2º ano</figcaption>
+          <div id="g-necessario" class="plot" role="img" aria-label="Aperto necessário em função da fatia de crédito direcionado"></div>
+        </figure>
+        <figure class="grafico">
+          <figcaption><strong>A fatia do crédito direcionado no Brasil</strong> · % do saldo total de crédito</figcaption>
+          <div id="g-direcionado" class="plot plot--baixo2" role="img" aria-label="Participação do crédito direcionado no saldo total"></div>
+          <p class="leitura" id="leitura-potencia"></p>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ BLOCO 5 — CANAL DE RENDA (lentes 5 e 6) -->
+<section class="bloco" id="renda">
+  <div class="largura">
+    <header class="bloco__cabeca">
+      <p class="bloco__num">Bloco 5</p>
+      <h2>O canal de renda dos juros</h2>
+      <p class="tags-lente"><a class="chip" href="#lente-5" style="--cor-lente: var(--l5)"><b>5</b>Pós-keynesiana: juro como renda e distribuição</a><a class="chip" href="#lente-6" style="--cor-lente: var(--l6)"><b>6</b>MMT: juro é gasto público</a></p>
+      <p class="bloco__lide">
+        Quando a Selic sobe, o governo paga mais juros sobre a dívida atrelada a ela, e isso é renda para quem detém os títulos.
+        Se parte dessa renda é consumida, o aperto tem um efeito expansionista que concorre com o canal convencional:
+        $$x_t = \underbrace{-\sigma\,(1-s)\,\Delta r_t}_{\text{canal convencional}} \;+\; \underbrace{c\,(1-\tau)\,\phi\,d\,\Delta i_t}_{\text{canal de renda}}$$
+        em que \(c\) é a propensão a consumir a renda de juros, \(\tau\) o IR, \(\phi\) a fatia da dívida atrelada à Selic e \(d\) a dívida/PIB.
+      </p>
+    </header>
+
+    <div class="painel">
+      <div class="controles">
+        <div class="controle">
+          <label for="sl-c"><span>Propensão a consumir a renda de juros, <i>c</i></span> <output id="out-c"></output></label>
+          <input type="range" id="sl-c" min="0" max="1" step="0.01" value="0.1">
+        </div>
+        <div class="controle">
+          <label for="sl-phi5"><span>Dívida atrelada à Selic, φ</span> <output id="out-phi5"></output></label>
+          <input type="range" id="sl-phi5" min="20" max="90" step="0.1" value="56.9">
+        </div>
+        <div class="controle">
+          <label for="sl-sigma5"><span>Sensibilidade da demanda, σ</span> <output id="out-sigma5"></output></label>
+          <input type="range" id="sl-sigma5" min="0.1" max="1" step="0.05" value="0.5">
+          <p class="nota">O limiar depende de σ. Com σ baixo, o canal de renda domina com propensões a consumir modestas.
+            Estimar σ e <i>c</i> é tarefa da Onda 2.</p>
+        </div>
+      </div>
+      <div class="resultados">
+        <div class="cards">
+          <div class="card"><p class="card__rot">Renda de juros por +1 p.p. de Selic</p><p class="card__val" id="c5-rs">–</p><p class="card__sub" id="c5-rs-sub"></p></div>
+          <div class="card"><p class="card__rot">Limiar de consumo, <i>c</i>*</p><p class="card__val" id="c5-lim">–</p><p class="card__sub">acima dele, o aperto aquece a demanda</p></div>
+          <div class="card"><p class="card__rot">Efeito líquido de +1 p.p.</p><p class="card__val" id="c5-liq">–</p><p class="card__sub">sobre o hiato do 1º ano, p.p.</p></div>
+        </div>
+        <figure class="grafico">
+          <figcaption><strong>Os dois canais de um aperto de 1 p.p.</strong> · efeito sobre o hiato do 1º ano, p.p.</figcaption>
+          <div id="g-canais" class="plot plot--baixo2" role="img" aria-label="Decomposição do efeito do aperto entre canal convencional e canal de renda"></div>
+        </figure>
+        <figure class="grafico">
+          <figcaption><strong>Quando o aperto deixa de esfriar a economia</strong> · efeito líquido de +1 p.p. sobre o hiato, conforme <i>c</i></figcaption>
+          <div id="g-limiar" class="plot" role="img" aria-label="Efeito líquido do aperto em função da propensão a consumir a renda de juros"></div>
+          <p class="leitura" id="leitura-renda"></p>
+        </figure>
+      </div>
+    </div>
+
+    <details class="metodo">
+      <summary>Como os Blocos 4 e 5 calculam (camada técnica)</summary>
+      <div class="metodo__corpo">
+        <p>Modelo anual, linear, em desvios de um cenário-base: \(\Delta r_t = \Delta i_t - \Delta\pi_{t-1}\) (expectativas adaptativas),
+          \(x_t = -\sigma(1-s)\Delta r_t + c(1-\tau)\phi d\,\Delta i_t\) e \(\Delta\pi_t = \omega\Delta\pi_{t-1} + \kappa x_t\). Calibração:
+          \(\sigma = 0{,}5\), \(\kappa = 0{,}3\) (mesmo significado do Bloco 3, em frequência anual), \(\omega = 0{,}5\), \(\tau = 15\%\);
+          \(s\) vem do SGS (saldo direcionado ÷ saldo total, séries 20593 e 20539), e \(\phi\) e \(d\) da Nota de Estatísticas Fiscais.
+          Como o modelo é linear, o aperto necessário para um alvo de desinflação é o alvo dividido pela potência, sem busca numérica.
+          O limiar é \(c^* = \sigma(1-s)/[(1-\tau)\phi d]\).</p>
+        <p class="nota">Limitações: economia fechada, sem canal cambial nem expectativas racionais; o canal de renda supõe que os juros da
+          parcela Selic chegam ao setor privado no mesmo ano. Serve para comparar mecanismos, não para prever magnitudes.</p>
+        <p class="conferencia" id="conferencia-transmissao"></p>
+      </div>
+    </details>
+  </div>
+</section>
+
 <!-- ============================================================ PARTE 4 — MAPA -->
 <section class="bloco bloco--alt" id="mapa">
   <div class="largura">
@@ -559,12 +694,12 @@
           <tr>
             <th scope="row">Crédito direcionado e indexação reduzem a potência da Selic.</th>
             <td data-pos="parte" title="em parte"><span class="oculto">em parte</span></td><td data-pos="na" title="não é central"><span class="oculto">não é central</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="na" title="não é central"><span class="oculto">não é central</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="na" title="não é central"><span class="oculto">não é central</span></td>
-            <td><span class="selo">Em breve</span> potência da Selic no laboratório. <span class="selo">Dados</span> transmissão por segmento de crédito.</td>
+            <td><a href="#potencia">Bloco 4</a> (potência da Selic). <span class="selo">Dados</span> transmissão por segmento de crédito.</td>
           </tr>
           <tr>
             <th scope="row">Os juros pagos redistribuem renda e sustentam a demanda de quem os recebe.</th>
             <td data-pos="na" title="não é central"><span class="oculto">não é central</span></td><td data-pos="na" title="não é central"><span class="oculto">não é central</span></td><td data-pos="na" title="não é central"><span class="oculto">não é central</span></td><td data-pos="parte" title="em parte"><span class="oculto">em parte</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td><td data-pos="sim" title="concorda"><span class="oculto">concorda</span></td>
-            <td><span class="selo">Em breve</span> canal de renda dos juros. <span class="selo">Dados</span> quem detém a dívida pública.</td>
+            <td><a href="#renda">Bloco 5</a> (canal de renda). <span class="selo">Dados</span> quem detém a dívida pública.</td>
           </tr>
           <tr>
             <th scope="row">Um corte anunciado e coordenado pode baixar o juro sem custo inflacionário relevante.</th>
@@ -666,7 +801,8 @@
         perda de lastro, o mesmo corte eleva a dívida e a inflação.</p>
       <p><strong>Próximos passos.</strong> Esses parâmetros podem ser estimados. A próxima etapa leva o laboratório aos dados
         brasileiros (reação do prêmio, do câmbio e das expectativas às decisões do Copom, curva de Phillips, potência da Selic e canal de
-        renda dos juros) para dizer quais lentes a evidência sustenta.</p>
+        renda dos juros) para dizer quais lentes a evidência sustenta. A <a href="onda2.html">primeira estimativa de γ e o estudo de eventos
+        do Copom</a> já estão publicados.</p>
     </div>
 
     <h3 class="subtitulo-secao">Dados e método</h3>
@@ -700,14 +836,15 @@
   <div class="largura">
 
     <!-- ======================================================== CAPTAÇÃO
-         Para ativar: preencha data-endpoint com a URL do seu provedor e ajuste os nomes dos campos.
-         - Brevo:     endpoint do formulário embutido (Contatos > Formulários > Compartilhar > HTML) ; campos EMAIL, FIRSTNAME
-         - Kit:       https://app.kit.com/forms/<ID>/subscriptions ; campos email_address, first_name
-         - Substack:  troque o <form> pelo <iframe src="https://SEU.substack.com/embed">
-         Com data-endpoint vazio, o formulário mostra um aviso e não envia nada. -->
+         Para ativar, preencha data-provedor e data-id no <form> abaixo (detalhes em docs/js/captacao.js):
+         - Brevo:     data-provedor="brevo"    data-id="https://XXXX.sibforms.com/serve/YYYY" (Formulários > Compartilhar > HTML)
+         - Kit:       data-provedor="kit"      data-id="1234567" (número do formulário)
+         - Substack:  data-provedor="substack" data-id="nomedapublicacao"
+         Com data-provedor vazio, o formulário mostra "em breve" e não envia nada. -->
     <aside class="captacao captacao--topo" id="cadastro">
       <div class="captacao__texto">
-        <p class="sobretitulo">Próximo: Onda 2 · Laboratório Empírico</p>
+        <p class="sobretitulo">Onda 2 · Laboratório Empírico</p>
+        <p><a class="botao-contorno" href="onda2.html">Ver os primeiros resultados: γ e o estudo de eventos do Copom →</a></p>
         <h2>As lentes discordam sobre mecanismos que podem ser medidos. A próxima etapa mede.</h2>
         <ul class="beneficios">
           <li>O laboratório estimado com dados brasileiros: prêmio de risco, curva de Phillips, potência da Selic e canal de renda dos juros</li>
@@ -716,7 +853,7 @@
           <li>Aviso mensal quando o painel for atualizado com a Nota Fiscal do BCB</li>
         </ul>
       </div>
-      <form class="form" id="form-cadastro" method="post" action="#" data-endpoint="" data-campo-nome="FIRSTNAME" data-campo-email="EMAIL" novalidate>
+      <form class="form" id="form-cadastro" method="post" action="#" data-provedor="kit" data-id="10223744" novalidate>
         <label for="f-nome">Nome</label>
         <input id="f-nome" name="nome" type="text" autocomplete="given-name" placeholder="Seu nome" required>
         <label for="f-email">E-mail</label>
@@ -724,7 +861,8 @@
         <!-- honeypot anti-spam -->
         <input type="text" name="website" tabindex="-1" autocomplete="off" class="oculto" aria-hidden="true">
         <button type="submit">Quero receber a Onda 2</button>
-        <p class="form__nota">Gratuito. Só nome e e-mail, sem WhatsApp. Sai com um clique.</p>
+        <p class="form__nota">Gratuito. Só nome e e-mail, sem WhatsApp. Sai com um clique. Seus dados são usados apenas
+          para os avisos deste projeto e não são compartilhados (LGPD).</p>
         <p class="form__status" id="form-status" role="status"></p>
       </form>
     </aside>

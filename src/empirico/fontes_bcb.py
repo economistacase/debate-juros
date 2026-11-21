@@ -4,9 +4,9 @@ Ponte para a automação mensal: cada série do SGS e cada tabela das Notas de E
 que a Onda 2 vai consumir, com o uso previsto no projeto. Os nomes das séries SGS foram conferidos
 no web service oficial do SGS (método getUltimoValorXML) em nov/2026.
 
-As tabelas da Nota são descritas pelo uso que o projeto faz delas. Os títulos oficiais e o layout das
-planilhas devem ser confirmados na implementação do leitor automático, porque o BCB pode renumerar
-ou reformatar tabelas entre edições.
+Os títulos das tabelas da Nota foram confirmados na edição de out/2026 e conferidos nas edições de
+2018 a 2025 (numeração estável). O leitor automático (`src/dados/nota_bcb.py`) localiza as tabelas
+pelo título e as linhas pelo rótulo, para resistir a renumerações futuras.
 """
 from __future__ import annotations
 
@@ -49,14 +49,14 @@ SERIES_SGS: dict[int, SerieSGS] = {s.codigo: s for s in [
 ]}
 
 TABELAS_NOTA: dict[int, TabelaNota] = {t.numero: t for t in [
-    TabelaNota(19, "Fatores condicionantes da variação da dívida bruta do governo geral",
+    TabelaNota(19, "Dívida bruta do Governo Geral — fatores condicionantes — fluxos acumulados no ano",
                "Decomposição anual da DBGG (juros, PIB, emissões líquidas, câmbio, outros)."),
-    TabelaNota(21, "Composição da dívida bruta por indexador",
+    TabelaNota(21, "Dívida bruta do Governo Geral — participação percentual por indexador",
                "Fatias Selic (com compromissadas), preços, prefixada e câmbio."),
-    TabelaNota(24, "Estrutura de vencimentos / prazo da dívida",
-               "Parcela que vence em 12 meses (renovação do prêmio de risco no Bloco 1)."),
-    TabelaNota(25, "Indicadores complementares de composição e custo da dívida bruta",
-               "Juro implícito da DBGG e conferência da composição."),
+    TabelaNota(24, "Taxa de juros implícita na DBGG — taxa acumulada em doze meses",
+               "Juro implícito da DBGG (custo médio da dívida no Bloco 1 e no retrato)."),
+    TabelaNota(25, "Cronograma de vencimento da DBGG",
+               "Parcela que vence em até 1 ano (renovação do prêmio de risco no Bloco 1)."),
 ]}
 
 
